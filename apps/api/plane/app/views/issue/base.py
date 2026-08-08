@@ -44,6 +44,7 @@ from plane.bgtasks.issue_activities_task import issue_activity
 from plane.bgtasks.issue_description_version_task import issue_description_version_task
 from plane.bgtasks.recent_visited_task import recent_visited_task
 from plane.bgtasks.webhook_task import model_activity
+from plane.bgtasks.github_sync_task import sync_issue_state_to_github, sync_issue_labels_to_github
 from plane.db.models import (
     CycleIssue,
     FileAsset,
@@ -59,6 +60,7 @@ from plane.db.models import (
     ModuleIssue,
     Project,
     ProjectMember,
+    State,
     UserRecentVisit,
 )
 from plane.utils.filters import ComplexFilterBackend, IssueFilterSet
@@ -675,11 +677,29 @@ class IssueViewSet(BaseViewSet):
             return Response({"error": "Issue not found"}, status=status.HTTP_404_NOT_FOUND)
 
         current_instance = json.dumps(IssueDetailSerializer(issue).data, cls=DjangoJSONEncoder)
+        old_state_id = issue.state_id
+        old_label_ids = set(
+            IssueLabel.objects.filter(issue_id=pk, deleted_at__isnull=True).values_list("label_id", flat=True)
+        )
 
         requested_data = json.dumps(self.request.data, cls=DjangoJSONEncoder)
         serializer = IssueCreateSerializer(issue, data=request.data, partial=True, context={"project_id": project_id})
         if serializer.is_valid():
             serializer.save()
+            # Mirror a state-group or label change back to GitHub, for issues that
+            # originated from a synced repo (external_source="github"). No-op for
+            # every other issue - see plane/bgtasks/github_sync_task.py.
+            if issue.state_id != old_state_id:
+                new_state = State.objects.filter(pk=issue.state_id).first()
+                if new_state:
+                    sync_issue_state_to_github.delay(
+                        issue_id=str(pk), is_closed=new_state.group in ("completed", "cancelled")
+                    )
+            new_label_ids = set(
+                IssueLabel.objects.filter(issue_id=pk, deleted_at__isnull=True).values_list("label_id", flat=True)
+            )
+            if new_label_ids != old_label_ids:
+                sync_issue_labels_to_github.delay(issue_id=str(pk))
             # Check if the update is a migration description update
             is_migration_description_update = skip_activity and is_description_update
             # Log all the updates

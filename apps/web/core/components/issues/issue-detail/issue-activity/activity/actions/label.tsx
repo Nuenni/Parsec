@@ -25,11 +25,12 @@ export const IssueLabelActivity = observer(function IssueLabelActivity(props: TI
   const activity = getActivityById(activityId);
   const oldLabelColor = getLabelById(activity?.old_identifier ?? "")?.color;
   const newLabelColor = getLabelById(activity?.new_identifier ?? "")?.color;
+  const activeLabelColor = activity?.old_value === "" ? newLabelColor : oldLabelColor;
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
-      icon={<LabelPropertyIcon height={14} width={14} className="text-secondary" />}
+      icon={<LabelPropertyIcon height={14} width={14} color={activeLabelColor} className="text-secondary" />}
       activityId={activityId}
       ends={ends}
     >

@@ -176,6 +176,11 @@
       "current": "Current estimate system",
       "select": "Select an estimate system"
     },
+    "github": {
+      "label": "GitHub",
+      "heading": "GitHub",
+      "description": "Link this project's issues to a GitHub repository for pull request status and (optionally) two-way issue sync."
+    },
     "automations": {
       "label": "Automations",
       "heading": "Automations",

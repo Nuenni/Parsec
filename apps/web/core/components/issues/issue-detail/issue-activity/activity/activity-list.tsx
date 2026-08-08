@@ -30,6 +30,7 @@ import {
   IssueAttachmentActivity,
   IssueArchivedAtActivity,
   IssueInboxActivity,
+  IssueGithubPrActivity,
 } from "./actions";
 
 type TIssueActivityItem = {
@@ -84,6 +85,8 @@ export const IssueActivityItem = observer(function IssueActivityItem(props: TIss
       return <IssueLabelActivity {...componentDefaultProps} showIssue={false} />;
     case "link":
       return <IssueLinkActivity {...componentDefaultProps} showIssue={false} />;
+    case "github_pr":
+      return <IssueGithubPrActivity {...componentDefaultProps} />;
     case "attachment":
       return <IssueAttachmentActivity {...componentDefaultProps} showIssue={false} />;
     case "archived_at":

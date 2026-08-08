@@ -6,8 +6,9 @@
 
 import { observer } from "mobx-react";
 // hooks
-import { StatePropertyIcon } from "@plane/propel/icons";
+import { StateGroupIcon } from "@plane/propel/icons";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useProjectState } from "@/hooks/store/use-project-state";
 // components
 import { IssueActivityBlockComponent, IssueLink } from "./";
 // icons
@@ -20,13 +21,21 @@ export const IssueStateActivity = observer(function IssueStateActivity(props: TI
   const {
     activity: { getActivityById },
   } = useIssueDetail();
+  const { getStateById } = useProjectState();
 
   const activity = getActivityById(activityId);
+  const newState = getStateById(activity?.new_identifier);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
-      icon={<StatePropertyIcon className="h-4 w-4 flex-shrink-0 text-secondary" />}
+      icon={
+        newState ? (
+          <StateGroupIcon stateGroup={newState.group} color={newState.color} className="h-4 w-4 flex-shrink-0" />
+        ) : (
+          <StateGroupIcon stateGroup="unstarted" className="h-4 w-4 flex-shrink-0" />
+        )
+      }
       activityId={activityId}
       ends={ends}
     >

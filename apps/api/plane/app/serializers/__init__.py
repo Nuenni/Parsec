@@ -135,3 +135,9 @@ from .draft import (
     DraftIssueSerializer,
     DraftIssueDetailSerializer,
 )
+
+from .github_integration import (
+    GithubPullRequestLinkSerializer,
+    GithubCommitLinkSerializer,
+    GithubProjectLinkSerializer,
+)
