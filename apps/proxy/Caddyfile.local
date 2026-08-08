@@ -1,0 +1,34 @@
+:8080 {
+	request_body {
+		max_size {$FILE_SIZE_LIMIT}
+	}
+
+	reverse_proxy /api/* api:8000
+
+	reverse_proxy /auth/* api:8000
+
+	reverse_proxy /static/* api:8000
+
+	# MinIO has no CORS config of its own, and unlike production (where the
+	# proxy also fronts the web app under this same origin), local dev runs
+	# the web app on a different origin (localhost:3000, via `pnpm dev`) -
+	# so direct browser uploads/downloads against /uploads need CORS here.
+	@cors_preflight {
+		method OPTIONS
+		path /uploads*
+	}
+	handle @cors_preflight {
+		header Access-Control-Allow-Origin "{$DEV_WEB_ORIGIN:http://localhost:3000}"
+		header Access-Control-Allow-Methods "GET, POST, PUT, HEAD, OPTIONS"
+		header Access-Control-Allow-Headers "*"
+		header Access-Control-Max-Age "86400"
+		respond 204
+	}
+
+	reverse_proxy /uploads/* plane-minio:9000 {
+		header_down Access-Control-Allow-Origin "{$DEV_WEB_ORIGIN:http://localhost:3000}"
+	}
+	reverse_proxy /uploads plane-minio:9000 {
+		header_down Access-Control-Allow-Origin "{$DEV_WEB_ORIGIN:http://localhost:3000}"
+	}
+}

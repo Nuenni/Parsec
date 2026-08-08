@@ -140,6 +140,21 @@ services:
       - plane-db
       - plane-redis
 
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks:
+      - dev_env
+    volumes:
+      - ./apps/proxy/Caddyfile.local:/etc/caddy/Caddyfile
+    env_file:
+      - .env
+    depends_on:
+      - api
+      - plane-minio
+    ports:
+      - "8080:8080"
+
 volumes:
   redisdata:
   uploads:

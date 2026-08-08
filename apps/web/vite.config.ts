@@ -18,6 +18,18 @@ export default defineConfig(() => ({
   define: {
     "process.env": JSON.stringify(viteEnv),
   },
+  optimizeDeps: {
+    // @plane/* workspace packages read process.env.VITE_* at module scope
+    // (e.g. @plane/constants' API_BASE_URL). Vite's `define` above only
+    // rewrites project source by default, not pre-built workspace deps -
+    // force them through esbuild's own define so the real values apply.
+    include: ["@plane/constants"],
+    esbuildOptions: {
+      define: {
+        "process.env": JSON.stringify(viteEnv),
+      },
+    },
+  },
   build: {
     assetsInlineLimit: 0,
   },
