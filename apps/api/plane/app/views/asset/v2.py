@@ -19,7 +19,17 @@ from rest_framework.permissions import AllowAny
 
 # Module imports
 from ..base import BaseAPIView
-from plane.db.models import FileAsset, Workspace, Project, User, WorkspaceMember, ProjectMember
+from plane.db.models import (
+    FileAsset,
+    Workspace,
+    Project,
+    User,
+    WorkspaceMember,
+    ProjectMember,
+    Issue,
+    IssueComment,
+    ProjectPage,
+)
 from plane.settings.storage import S3Storage
 from plane.app.permissions import allow_permission, ROLE
 from plane.utils.cache import invalidate_cache_directly
@@ -224,15 +234,27 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
             FileAsset.EntityTypeContext.ISSUE_ATTACHMENT,
             FileAsset.EntityTypeContext.ISSUE_DESCRIPTION,
         ]:
-            return {"issue_id": entity_id}
+            fields = {"issue_id": entity_id}
+            issue = Issue.objects.filter(id=entity_id).first()
+            if issue is not None:
+                fields["project_id"] = issue.project_id
+            return fields
 
         # Page Description
         if entity_type == FileAsset.EntityTypeContext.PAGE_DESCRIPTION:
-            return {"page_id": entity_id}
+            fields = {"page_id": entity_id}
+            project_page = ProjectPage.objects.filter(page_id=entity_id).first()
+            if project_page is not None:
+                fields["project_id"] = project_page.project_id
+            return fields
 
         # Comment Description
         if entity_type == FileAsset.EntityTypeContext.COMMENT_DESCRIPTION:
-            return {"comment_id": entity_id}
+            fields = {"comment_id": entity_id}
+            comment = IssueComment.objects.filter(id=entity_id).first()
+            if comment is not None:
+                fields["project_id"] = comment.project_id
+            return fields
         return {}
 
     def asset_delete(self, asset_id):

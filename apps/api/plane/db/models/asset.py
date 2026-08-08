@@ -98,6 +98,12 @@ class FileAsset(BaseModel):
             self.EntityTypeContext.PAGE_DESCRIPTION,
             self.EntityTypeContext.DRAFT_ISSUE_DESCRIPTION,
         ]:
+            # PAGE_DESCRIPTION assets may belong to a workspace-level page that
+            # isn't linked to any project (no ProjectPage row), so project_id
+            # can legitimately be None here - fall back to the workspace-scoped
+            # asset route instead of emitting a broken "projects/None/" URL.
+            if self.project_id is None:
+                return f"/api/assets/v2/workspaces/{self.workspace.slug}/{self.id}/"
             return f"/api/assets/v2/workspaces/{self.workspace.slug}/projects/{self.project_id}/{self.id}/"
 
         return None
