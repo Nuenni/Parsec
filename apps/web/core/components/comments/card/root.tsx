@@ -25,6 +25,8 @@ type TCommentCard = {
   enableReplies: boolean;
   disabled?: boolean;
   projectId?: string;
+  // renders as an indented reply nested under a top-level comment; also disables further replies
+  isReply?: boolean;
 };
 
 export const CommentCard = observer(function CommentCard(props: TCommentCard) {
@@ -38,6 +40,8 @@ export const CommentCard = observer(function CommentCard(props: TCommentCard) {
     showCopyLinkOption,
     disabled = false,
     projectId,
+    enableReplies,
+    isReply = false,
   } = props;
   // states
   const [isEditing, setIsEditing] = useState(false);
@@ -49,7 +53,7 @@ export const CommentCard = observer(function CommentCard(props: TCommentCard) {
   if (!comment || !workspaceId) return null;
 
   return (
-    <CommentBlock comment={comment} ends={ends}>
+    <CommentBlock comment={comment} ends={ends} isReply={isReply}>
       <CommentCardDisplay
         activityOperations={activityOperations}
         entityId={entityId}
@@ -62,6 +66,7 @@ export const CommentCard = observer(function CommentCard(props: TCommentCard) {
         workspaceSlug={workspaceSlug}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
+        enableReplies={enableReplies}
         renderQuickActions={() => (
           <CommentQuickActions
             activityOperations={activityOperations}

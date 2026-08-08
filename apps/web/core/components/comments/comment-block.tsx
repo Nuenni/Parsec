@@ -17,17 +17,23 @@ type TCommentBlock = {
   comment: TIssueComment;
   ends: "top" | "bottom" | undefined;
   children: ReactNode;
+  // renders as an indented, visually lighter reply nested under a top-level comment
+  isReply?: boolean;
 };
 
 export const CommentBlock = observer(function CommentBlock(props: TCommentBlock) {
-  const { comment, ends, children } = props;
+  const { comment, ends, children, isReply = false } = props;
   const commentBlockRef = useRef<HTMLDivElement>(null);
 
   if (!comment) return null;
   return (
     <div
       id={comment.id}
-      className={`relative flex gap-3 ${ends === "top" ? `pb-2` : ends === "bottom" ? `pt-2` : `py-2`}`}
+      className={cn(
+        "relative flex gap-3",
+        ends === "top" ? "pb-2" : ends === "bottom" ? "pt-2" : "py-2",
+        isReply && "ml-10"
+      )}
       ref={commentBlockRef}
     >
       <div

@@ -45,6 +45,7 @@ export type TIssueComment = {
   external_id: string | undefined;
   external_source: string | undefined;
   access: EIssueCommentAccessSpecifier;
+  parent: string | null;
 };
 
 export type TCommentsOperations = {

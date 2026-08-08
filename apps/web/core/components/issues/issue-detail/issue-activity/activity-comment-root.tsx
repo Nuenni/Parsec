@@ -55,30 +55,59 @@ export const IssueActivityCommentRoot = observer(function IssueActivityCommentRo
 
   const filteredActivityAndComments = filterActivityOnSelectedFilters(activityAndComments, selectedFilters);
 
+  // Replies are comments with a `parent` set. Group them under their parent instead
+  // of rendering them at their own position in the flat chronological feed.
+  const repliesByParentId: Record<string, ReturnType<typeof getCommentById>[]> = {};
+  filteredActivityAndComments.forEach((activityComment) => {
+    if (activityComment.activity_type !== "COMMENT") return;
+    const comment = getCommentById(activityComment.id);
+    if (!comment || !comment.parent) return;
+    (repliesByParentId[comment.parent] ??= []).push(comment);
+  });
+  Object.values(repliesByParentId).forEach((replies) =>
+    replies.sort((a, b) => new Date(a?.created_at ?? 0).getTime() - new Date(b?.created_at ?? 0).getTime())
+  );
+
   return (
     <div>
       {filteredActivityAndComments.map((activityComment, index) => {
         const comment = getCommentById(activityComment.id);
+        // rendered nested under its parent instead, skip at the top level
+        if (activityComment.activity_type === "COMMENT" && comment?.parent) return null;
+        const ends = index === 0 ? "top" : index === filteredActivityAndComments.length - 1 ? "bottom" : undefined;
         return activityComment.activity_type === "COMMENT" ? (
-          <CommentCard
-            key={activityComment.id}
-            workspaceSlug={workspaceSlug}
-            entityId={issueId}
-            comment={comment}
-            activityOperations={activityOperations}
-            ends={index === 0 ? "top" : index === filteredActivityAndComments.length - 1 ? "bottom" : undefined}
-            showAccessSpecifier={!!showAccessSpecifier}
-            showCopyLinkOption={!isIntakeIssue}
-            disabled={disabled}
-            projectId={projectId}
-            enableReplies
-          />
+          <div key={activityComment.id}>
+            <CommentCard
+              workspaceSlug={workspaceSlug}
+              entityId={issueId}
+              comment={comment}
+              activityOperations={activityOperations}
+              ends={ends}
+              showAccessSpecifier={!!showAccessSpecifier}
+              showCopyLinkOption={!isIntakeIssue}
+              disabled={disabled}
+              projectId={projectId}
+              enableReplies
+            />
+            {repliesByParentId[activityComment.id]?.map((reply) => (
+              <CommentCard
+                key={reply?.id}
+                workspaceSlug={workspaceSlug}
+                entityId={issueId}
+                comment={reply}
+                activityOperations={activityOperations}
+                ends={undefined}
+                showAccessSpecifier={!!showAccessSpecifier}
+                showCopyLinkOption={!isIntakeIssue}
+                disabled={disabled}
+                projectId={projectId}
+                enableReplies
+                isReply
+              />
+            ))}
+          </div>
         ) : BASE_ACTIVITY_FILTER_TYPES.includes(activityComment.activity_type as EActivityFilterType) ? (
-          <IssueActivityItem
-            key={activityComment.id}
-            activityId={activityComment.id}
-            ends={index === 0 ? "top" : index === filteredActivityAndComments.length - 1 ? "bottom" : undefined}
-          />
+          <IssueActivityItem key={activityComment.id} activityId={activityComment.id} ends={ends} />
         ) : null;
       })}
     </div>

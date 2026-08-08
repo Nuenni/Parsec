@@ -11,13 +11,15 @@ import { usePathname } from "next/navigation";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
 import { useHashScroll } from "@plane/hooks";
-import { GlobeIcon, LockIcon } from "@plane/propel/icons";
+import { useTranslation } from "@plane/i18n";
+import { CommentReplyIcon, GlobeIcon, LockIcon } from "@plane/propel/icons";
 import { EIssueCommentAccessSpecifier } from "@plane/types";
 import type { TCommentsOperations, TIssueComment } from "@plane/types";
 import { calculateTimeAgo, cn, getFileURL, renderFormattedDate, renderFormattedTime } from "@plane/utils";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 // local imports
+import { CommentCreate } from "../comment-create";
 import { CommentReactions } from "../comment-reaction";
 import { CommentCardEditForm } from "./edit-form";
 import { EmojiReactionButton, EmojiReactionPicker } from "@plane/propel/emoji-reaction";
@@ -38,6 +40,8 @@ export type TCommentCardDisplayProps = {
   setIsEditing?: (isEditing: boolean) => void;
   renderFooter?: (ReactionsComponent: ReactNode | null) => ReactNode;
   renderQuickActions?: () => ReactNode;
+  // reply thread (only rendered for top-level comments, replies can't be replied to)
+  enableReplies?: boolean;
 };
 
 export const CommentCardDisplay = observer(function CommentCardDisplay(props: TCommentCardDisplayProps) {
@@ -54,13 +58,18 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
     setIsEditing,
     renderFooter,
     renderQuickActions,
+    entityId,
+    enableReplies = false,
   } = props;
   // states
   const [highlightClassName, setHighlightClassName] = useState("");
   // state
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   // store hooks
   const { getUserDetails } = useMember();
+  // translation
+  const { t } = useTranslation();
   // derived values
   const userDetails = getUserDetails(comment?.actor);
   const displayName = comment?.actor_detail?.is_bot
@@ -143,6 +152,20 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
               label={<EmojiReactionButton onAddReaction={() => setIsPickerOpen(true)} />}
               placement="bottom-start"
             />
+            {enableReplies && (
+              <Tooltip tooltipContent={t("issue.comments.replies.action")} position="top">
+                <button
+                  type="button"
+                  onClick={() => setIsReplying((prev) => !prev)}
+                  className={cn(
+                    "grid place-items-center rounded-sm p-1 text-tertiary hover:bg-layer-1 hover:text-secondary",
+                    { "bg-layer-1 text-secondary": isReplying }
+                  )}
+                >
+                  <CommentReplyIcon width={14} height={14} aria-hidden="true" />
+                </button>
+              </Tooltip>
+            )}
             {renderQuickActions ? renderQuickActions() : null}
           </div>
         )}
@@ -182,6 +205,21 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
             ) : (
               <CommentReactions comment={comment} disabled={disabled} activityOperations={activityOperations} />
             ))}
+          {enableReplies && isReplying && (
+            <div className="mt-2">
+              <CommentCreate
+                workspaceSlug={workspaceSlug}
+                entityId={entityId}
+                activityOperations={activityOperations}
+                projectId={projectId}
+                parentId={comment.parent ?? comment.id}
+                showToolbarInitially
+                placeholder={t("issue.comments.replies.create.placeholder")}
+                submitButtonText="issue.comments.replies.create.submit_button"
+                onSubmitCallback={() => setIsReplying(false)}
+              />
+            </div>
+          )}
         </>
       )}
     </div>

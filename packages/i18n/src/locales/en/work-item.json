@@ -113,6 +113,8 @@
         "error": "Error copying comment link. Please try again later."
       },
       "replies": {
+        "action": "Reply",
+        "cancel": "Cancel",
         "create": {
           "submit_button": "Add reply",
           "placeholder": "Add reply"

@@ -26,6 +26,10 @@ type TCommentCreate = {
   showToolbarInitially?: boolean;
   projectId?: string;
   onSubmitCallback?: (elementId: string) => void;
+  // when set, the created comment is submitted as a reply to this comment id
+  parentId?: string;
+  placeholder?: string;
+  submitButtonText?: string;
 };
 
 // services
@@ -39,6 +43,9 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
     showToolbarInitially = false,
     projectId,
     onSubmitCallback,
+    parentId,
+    placeholder,
+    submitButtonText,
   } = props;
   // states
   const [uploadedAssetIds, setUploadedAssetIds] = useState<string[]>([]);
@@ -63,7 +70,7 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
 
   const onSubmit = async (formData: Partial<TIssueComment>) => {
     try {
-      const comment = await activityOperations.createComment(formData);
+      const comment = await activityOperations.createComment(parentId ? { ...formData, parent: parentId } : formData);
       if (comment?.id) onSubmitCallback?.(comment.id);
       if (uploadedAssetIds.length > 0) {
         if (projectId) {
@@ -92,6 +99,7 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
 
   return (
     <div
+      role="group"
       className={cn("sticky bottom-0 z-[4] bg-surface-1 sm:static")}
       onKeyDown={(e) => {
         if (
@@ -144,6 +152,8 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
                   return asset_id;
                 }}
                 showToolbarInitially={showToolbarInitially}
+                placeholder={placeholder}
+                submitButtonText={submitButtonText}
                 parentClassName="p-2"
                 displayConfig={{
                   fontSize: "small-font",
