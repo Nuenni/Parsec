@@ -45,6 +45,8 @@ export interface IProjectPageStore {
   // helper actions
   getCurrentProjectPageIdsByTab: (pageType: TPageNavigationTabs) => string[] | undefined;
   getCurrentProjectPageIds: (projectId: string) => string[];
+  getCurrentProjectRootPageIds: (projectId: string) => string[];
+  getChildPageIds: (pageId: string) => string[];
   getCurrentProjectFilteredPageIdsByTab: (pageType: TPageNavigationTabs) => string[] | undefined;
   getPageById: (pageId: string) => TProjectPage | undefined;
   updateFilters: <T extends keyof TPageFilters>(filterKey: T, filterValue: TPageFilters[T]) => void;
@@ -157,6 +159,30 @@ export class ProjectPageStore implements IProjectPageStore {
     if (!projectId) return [];
     const pages = Object.values(this?.data || {}).filter((page) => page.project_ids?.includes(projectId));
     return pages.map((page) => page.id) as string[];
+  });
+
+  /**
+   * @description get the root (parent-less) page ids of a project, for building the sidebar page tree
+   * @param {string} projectId
+   */
+  getCurrentProjectRootPageIds = computedFn((projectId: string) => {
+    if (!projectId) return [];
+    const pages = Object.values(this?.data || {}).filter(
+      (page) => page.project_ids?.includes(projectId) && !page.archived_at && !page.parent
+    );
+    const orderedPages = orderPages(pages, "created_at", "asc");
+    return orderedPages.map((page) => page.id) as string[];
+  });
+
+  /**
+   * @description get the child page ids of a page, for building the sidebar page tree
+   * @param {string} pageId
+   */
+  getChildPageIds = computedFn((pageId: string) => {
+    if (!pageId) return [];
+    const pages = Object.values(this?.data || {}).filter((page) => page.parent === pageId && !page.archived_at);
+    const orderedPages = orderPages(pages, "created_at", "asc");
+    return orderedPages.map((page) => page.id) as string[];
   });
 
   /**

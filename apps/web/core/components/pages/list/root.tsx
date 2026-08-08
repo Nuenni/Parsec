@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Fragment, useState } from "react";
 import { observer } from "mobx-react";
 // types
 import type { TPageNavigationTabs } from "@plane/types";
@@ -22,17 +23,50 @@ type TPagesListRoot = {
 
 export const PagesListRoot = observer(function PagesListRoot(props: TPagesListRoot) {
   const { pageType, storeType } = props;
+  // states
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   // store hooks
-  const { getCurrentProjectFilteredPageIdsByTab } = usePageStore(storeType);
+  const { getCurrentProjectFilteredPageIdsByTab, getPageById, getChildPageIds } = usePageStore(storeType);
   // derived values
   const filteredPageIds = getCurrentProjectFilteredPageIdsByTab(pageType);
 
   if (!filteredPageIds) return <></>;
-  return (
-    <ListLayout>
-      {filteredPageIds.map((pageId) => (
-        <PageListBlock key={pageId} pageId={pageId} storeType={storeType} />
-      ))}
-    </ListLayout>
-  );
+
+  // Nest pages that have a parent under that parent, matching the sidebar page
+  // tree. A page whose parent got filtered/searched out (or belongs to a
+  // different tab) is treated as a root so it never disappears from the list.
+  const filteredSet = new Set(filteredPageIds);
+  const rootPageIds = filteredPageIds.filter((pageId) => {
+    const page = getPageById(pageId);
+    return !page?.parent || !filteredSet.has(page.parent);
+  });
+
+  const toggleExpand = (pageId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(pageId)) next.delete(pageId);
+      else next.add(pageId);
+      return next;
+    });
+  };
+
+  const renderPageAndChildren = (pageId: string, depth: number) => {
+    const childPageIds = getChildPageIds(pageId).filter((childId) => filteredSet.has(childId));
+    const isExpanded = expandedIds.has(pageId);
+    return (
+      <Fragment key={pageId}>
+        <PageListBlock
+          pageId={pageId}
+          storeType={storeType}
+          depth={depth}
+          hasChildren={childPageIds.length > 0}
+          isExpanded={isExpanded}
+          onToggleExpand={() => toggleExpand(pageId)}
+        />
+        {isExpanded && childPageIds.map((childId) => renderPageAndChildren(childId, depth + 1))}
+      </Fragment>
+    );
+  };
+
+  return <ListLayout>{rootPageIds.map((pageId) => renderPageAndChildren(pageId, 0))}</ListLayout>;
 });

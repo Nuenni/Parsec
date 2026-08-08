@@ -20,6 +20,8 @@ export type TPage = {
   is_favorite: boolean;
   is_locked: boolean;
   label_ids: string[] | undefined;
+  // write-only: label ids to set on the page, mirrors the API's `labels` field
+  labels?: string[];
   name: string | undefined;
   owned_by: string | undefined;
   project_ids?: string[] | undefined;
@@ -28,6 +30,7 @@ export type TPage = {
   workspace: string | undefined;
   logo_props: TLogoProps | undefined;
   deleted_at: Date | undefined;
+  parent: string | null | undefined;
 } & TPageExtended;
 
 // page filters

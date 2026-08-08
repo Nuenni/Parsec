@@ -102,6 +102,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
   created_at: Date | undefined;
   updated_at: Date | undefined;
   deleted_at: Date | undefined;
+  parent: string | null | undefined;
   // helpers
   oldName: string = "";
   // services
@@ -140,6 +141,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
     this.updated_at = page?.updated_at || undefined;
     this.oldName = page?.name || "";
     this.deleted_at = page?.deleted_at || undefined;
+    this.parent = page?.parent || undefined;
 
     makeObservable(this, {
       // loaders
@@ -164,6 +166,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
       created_at: observable.ref,
       updated_at: observable.ref,
       deleted_at: observable.ref,
+      parent: observable.ref,
       isSyncingWithServer: observable.ref,
       // helpers
       oldName: observable.ref,
@@ -227,6 +230,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
       description_html: this.description_html,
       color: this.color,
       label_ids: this.label_ids,
+      labels: this.label_ids,
       owned_by: this.owned_by,
       access: this.access,
       logo_props: this.logo_props,
@@ -240,6 +244,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
       created_at: this.created_at,
       updated_at: this.updated_at,
       deleted_at: this.deleted_at,
+      parent: this.parent,
       ...this.asJSONExtended,
     };
   }
@@ -280,7 +285,7 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
         });
       });
 
-      return await this.services.update(currentPage);
+      return await this.services.update(pageData);
     } catch (error) {
       runInAction(() => {
         Object.keys(pageData).forEach((key) => {
