@@ -20,6 +20,11 @@
           "edited_by": "Edited by",
           "created_by": "Created by"
         },
+        "sub_pages": {
+          "parent": "Parent page",
+          "label": "Sub-pages",
+          "empty": "No sub-pages yet"
+        },
         "version_history": {
           "label": "Version history",
           "current_version": "Current version",

@@ -13,6 +13,7 @@ import type { TPageInstance } from "@/store/pages/base-page";
 import { PageNavigationPaneInfoTabActorsInfo } from "./actors-info";
 import { PageNavigationPaneInfoTabDocumentInfo } from "./document-info";
 import { PageNavigationPaneInfoTabLabelsInfo } from "./labels-info";
+import { PageNavigationPaneInfoTabSubPagesInfo } from "./sub-pages-info";
 import { PageNavigationPaneInfoTabVersionHistory } from "./version-history";
 
 type Props = {
@@ -28,6 +29,7 @@ export const PageNavigationPaneInfoTabPanel = observer(function PageNavigationPa
         <PageNavigationPaneInfoTabDocumentInfo page={page} />
         <PageNavigationPaneInfoTabActorsInfo page={page} />
         <PageNavigationPaneInfoTabLabelsInfo page={page} />
+        <PageNavigationPaneInfoTabSubPagesInfo page={page} />
         <div className="my-3 h-px flex-shrink-0 bg-layer-1" />
         <PageNavigationPaneInfoTabVersionHistory page={page} versionHistory={versionHistory} />
       </div>
