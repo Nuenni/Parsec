@@ -10,7 +10,15 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { ChevronRightIcon, CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
+import {
+  ChevronRightIcon,
+  CycleIcon,
+  IntakeIcon,
+  ModuleIcon,
+  PageIcon,
+  ViewsIcon,
+  WorkItemsIcon,
+} from "@plane/propel/icons";
 import type { EUserProjectRoles } from "@plane/types";
 import { cn } from "@plane/utils";
 // plane ui
@@ -151,7 +159,8 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
     };
 
     // sort navigation items by sortOrder
-    const sortedNavigationItems = [...navigationItems(workspaceSlug, projectId)].toSorted(
+    // oxlint-disable-next-line unicorn/no-array-sort -- Array.prototype.toSorted needs ES2023, not in this project's tsconfig lib target
+    const sortedNavigationItems = [...navigationItems(workspaceSlug, projectId)].sort(
       (a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)
     );
 
