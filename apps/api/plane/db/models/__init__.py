@@ -92,3 +92,4 @@ from .sticky import Sticky
 from .description import Description, DescriptionVersion
 
 from .github_integration import GithubProjectLink, GithubPullRequestLink, GithubCommitLink
+from .email_intake import EmailIntakeConfig, EmailIssueLink

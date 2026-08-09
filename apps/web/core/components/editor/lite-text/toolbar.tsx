@@ -104,32 +104,6 @@ export function IssueCommentToolbar(props: Props) {
 
   return (
     <div className="flex h-9 w-full items-stretch gap-1.5 overflow-x-scroll bg-surface-2">
-      {showAccessSpecifier && (
-        <div className="flex flex-shrink-0 items-stretch gap-0.5 rounded-sm border-[0.5px] border-subtle p-1">
-          {COMMENT_ACCESS_SPECIFIERS.map((access) => {
-            const isAccessActive = accessSpecifier === access.key;
-
-            return (
-              <Tooltip key={access.key} tooltipContent={access.label}>
-                <button
-                  type="button"
-                  onClick={() => handleAccessChange?.(access.key)}
-                  className={cn("grid aspect-square place-items-center rounded-xs p-1 hover:bg-layer-1", {
-                    "bg-layer-1": isAccessActive,
-                  })}
-                >
-                  <access.icon
-                    className={cn("h-3.5 w-3.5 text-placeholder", {
-                      "text-primary": isAccessActive,
-                    })}
-                    strokeWidth={2}
-                  />
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
-      )}
       <div className="flex w-full items-stretch justify-between gap-2 rounded-sm border-[0.5px] border-subtle p-1">
         <div className="flex items-stretch">
           {Object.keys(toolbarItems).map((key, index) => (
@@ -175,8 +149,36 @@ export function IssueCommentToolbar(props: Props) {
             </div>
           ))}
         </div>
-        {showSubmitButton && (
-          <div className="sticky right-1">
+        <div className="sticky right-1 flex items-stretch gap-1.5">
+          {showAccessSpecifier && (
+            <div className="flex flex-shrink-0 items-stretch gap-0.5 rounded-sm border-[0.5px] border-subtle p-1">
+              {COMMENT_ACCESS_SPECIFIERS.map((access) => {
+                const isAccessActive = accessSpecifier === access.key;
+                const activeColorClassName =
+                  access.key === EIssueCommentAccessSpecifier.INTERNAL
+                    ? "text-warning-primary"
+                    : "text-label-indigo-text";
+
+                return (
+                  <Tooltip key={access.key} tooltipContent={access.label}>
+                    <button
+                      type="button"
+                      onClick={() => handleAccessChange?.(access.key)}
+                      className={cn("grid aspect-square place-items-center rounded-xs p-1 hover:bg-layer-1", {
+                        "bg-layer-1": isAccessActive,
+                      })}
+                    >
+                      <access.icon
+                        className={cn("h-3.5 w-3.5", isAccessActive ? activeColorClassName : "text-placeholder")}
+                        strokeWidth={2}
+                      />
+                    </button>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          )}
+          {showSubmitButton && (
             <Button
               type="submit"
               variant="primary"
@@ -187,8 +189,8 @@ export function IssueCommentToolbar(props: Props) {
             >
               {t(submitButtonText)}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

@@ -47,6 +47,10 @@ app.conf.beat_schedule = {
         "task": "plane.bgtasks.email_notification_task.stack_email_notification",
         "schedule": crontab(minute="*/5"),  # Every 5 minutes
     },
+    "poll-email-intake-inboxes": {
+        "task": "plane.bgtasks.email_intake_task.poll_email_intake_inboxes",
+        "schedule": crontab(minute="*/2"),  # Every 2 minutes
+    },
     "push-instance-metrics": {
         "task": "plane.license.bgtasks.telemetry_metrics.push_instance_metrics",
         "schedule": schedule(run_every=timedelta(minutes=METRICS_PUSH_INTERVAL_MINUTES)),

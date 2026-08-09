@@ -155,6 +155,15 @@ class S3Storage(S3Boto3Storage):
             "Metadata": response.get("Metadata", {}),
         }
 
+    def get_object_bytes(self, object_name):
+        """Download an S3 object's content. Returns (bytes, content_type) or (None, None)."""
+        try:
+            response = self.s3_client.get_object(Bucket=self.aws_storage_bucket_name, Key=object_name)
+            return response["Body"].read(), response.get("ContentType")
+        except ClientError as e:
+            log_exception(e)
+            return None, None
+
     def copy_object(self, object_name, new_object_name):
         """Copy an S3 object to a new location"""
         try:

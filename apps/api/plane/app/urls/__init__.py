@@ -9,6 +9,7 @@ from .cycle import urlpatterns as cycle_urls
 from .estimate import urlpatterns as estimate_urls
 from .external import urlpatterns as external_urls
 from .github import urlpatterns as github_urls
+from .email_intake import urlpatterns as email_intake_urls
 from .intake import urlpatterns as intake_urls
 from .issue import urlpatterns as issue_urls
 from .module import urlpatterns as module_urls
@@ -31,6 +32,7 @@ urlpatterns = [
     *estimate_urls,
     *external_urls,
     *github_urls,
+    *email_intake_urls,
     *intake_urls,
     *issue_urls,
     *module_urls,

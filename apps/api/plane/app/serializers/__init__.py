@@ -141,3 +141,4 @@ from .github_integration import (
     GithubCommitLinkSerializer,
     GithubProjectLinkSerializer,
 )
+from .email_intake import EmailIntakeConfigSerializer

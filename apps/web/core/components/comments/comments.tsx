@@ -50,9 +50,10 @@ export const CommentsWrapper = observer(function CommentsWrapper(props: TComment
           entityId={entityId}
           activityOperations={activityOperations}
           projectId={projectId}
+          showAccessSpecifier={showAccessSpecifier}
         />
       ),
-    [isEditingAllowed, workspaceSlug, entityId, activityOperations, projectId]
+    [isEditingAllowed, workspaceSlug, entityId, activityOperations, projectId, showAccessSpecifier]
   );
 
   return (

@@ -24,6 +24,7 @@ from plane.bgtasks.issue_activities_task import issue_activity
 from plane.utils.host import base_host
 from plane.bgtasks.webhook_task import model_activity
 from plane.bgtasks.github_sync_task import sync_comment_to_github
+from plane.bgtasks.email_intake_task import sync_comment_to_email
 
 
 class IssueCommentViewSet(BaseViewSet):
@@ -84,6 +85,7 @@ class IssueCommentViewSet(BaseViewSet):
         if serializer.is_valid():
             serializer.save(project_id=project_id, issue_id=issue_id, actor=request.user)
             sync_comment_to_github.delay(comment_id=str(serializer.data["id"]))
+            sync_comment_to_email.delay(comment_id=str(serializer.data["id"]))
             issue_activity.delay(
                 type="comment.activity.created",
                 requested_data=json.dumps(serializer.data, cls=DjangoJSONEncoder),

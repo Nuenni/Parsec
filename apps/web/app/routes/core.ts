@@ -350,6 +350,11 @@ export const coreRoutes: RouteConfigEntry[] = [
               ":workspaceSlug/settings/projects/:projectId/github",
               "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/github/page.tsx"
             ),
+            // Project Email Support
+            route(
+              ":workspaceSlug/settings/projects/:projectId/email-intake",
+              "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/email-intake/page.tsx"
+            ),
           ]),
         ]),
       ]),

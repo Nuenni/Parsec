@@ -181,6 +181,11 @@
       "heading": "GitHub",
       "description": "Link this project's issues to a GitHub repository for pull request status and (optionally) two-way issue sync."
     },
+    "email_intake": {
+      "label": "Email Support",
+      "heading": "Email Support",
+      "description": "Poll a support mailbox over IMAP to create issues from incoming emails, and reply to requesters over SMTP."
+    },
     "automations": {
       "label": "Automations",
       "heading": "Automations",

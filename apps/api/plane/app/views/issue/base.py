@@ -45,6 +45,7 @@ from plane.bgtasks.issue_description_version_task import issue_description_versi
 from plane.bgtasks.recent_visited_task import recent_visited_task
 from plane.bgtasks.webhook_task import model_activity
 from plane.bgtasks.github_sync_task import sync_issue_state_to_github, sync_issue_labels_to_github
+from plane.bgtasks.email_intake_task import sync_issue_state_to_email
 from plane.db.models import (
     CycleIssue,
     FileAsset,
@@ -695,6 +696,7 @@ class IssueViewSet(BaseViewSet):
                     sync_issue_state_to_github.delay(
                         issue_id=str(pk), is_closed=new_state.group in ("completed", "cancelled")
                     )
+                    sync_issue_state_to_email.delay(issue_id=str(pk), new_state_name=new_state.name)
             new_label_ids = set(
                 IssueLabel.objects.filter(issue_id=pk, deleted_at__isnull=True).values_list("label_id", flat=True)
             )

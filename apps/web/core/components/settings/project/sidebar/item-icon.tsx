@@ -5,7 +5,7 @@
  */
 
 import type { LucideIcon } from "lucide-react";
-import { Github, Users, Zap } from "lucide-react";
+import { Github, Mail, Users, Zap } from "lucide-react";
 // plane imports
 import type { ISvgIcons } from "@plane/propel/icons";
 import {
@@ -35,4 +35,5 @@ export const PROJECT_SETTINGS_ICONS: Record<TProjectSettingsTabs, LucideIcon | R
   estimates: EstimatePropertyIcon,
   automations: Zap,
   github: Github,
+  email_intake: Mail,
 };

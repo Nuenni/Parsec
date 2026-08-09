@@ -30,6 +30,7 @@ type TCommentCreate = {
   parentId?: string;
   placeholder?: string;
   submitButtonText?: string;
+  showAccessSpecifier?: boolean;
 };
 
 // services
@@ -46,6 +47,7 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
     parentId,
     placeholder,
     submitButtonText,
+    showAccessSpecifier = false,
   } = props;
   // states
   const [uploadedAssetIds, setUploadedAssetIds] = useState<string[]>([]);
@@ -140,6 +142,7 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
                 onChange={(comment_json, comment_html) => onChange(comment_html)}
                 accessSpecifier={accessValue ?? EIssueCommentAccessSpecifier.INTERNAL}
                 handleAccessChange={onAccessChange}
+                showAccessSpecifier={showAccessSpecifier}
                 isSubmitting={isSubmitting}
                 uploadFile={async (blockId, file) => {
                   const { asset_id } = await activityOperations.uploadCommentAsset(blockId, file);

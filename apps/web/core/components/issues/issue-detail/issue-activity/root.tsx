@@ -7,6 +7,7 @@
 import { useMemo } from "react";
 import uniq from "lodash-es/uniq";
 import { observer } from "mobx-react";
+import useSWR from "swr";
 // plane package imports
 import type { TActivityFilters } from "@plane/constants";
 import { E_SORT_ORDER, defaultActivityFilters } from "@plane/constants";
@@ -19,11 +20,15 @@ import type { TFileSignedURLResponse, TIssueComment } from "@plane/types";
 import { CommentCreate } from "@/components/comments/comment-create";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
+// services
+import { IssueEmailLinkService } from "@/services/issue/email_link.service";
 // local imports
 import { IssueActivityCommentRoot } from "./activity-comment-root";
 import { useWorkItemCommentOperations } from "./helper";
 import { ActivitySortRoot } from "./sort-root";
 import { ActivityFilterRoot } from "./filter-root";
+
+const issueEmailLinkService = new IssueEmailLinkService();
 
 type TIssueActivity = {
   workspaceSlug: string;
@@ -75,6 +80,10 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
   const activityOperations = useWorkItemCommentOperations(workspaceSlug, projectId, issueId);
 
   const project = getProjectById(projectId);
+  const { data: emailLink } = useSWR(workspaceSlug && projectId && issueId ? `ISSUE_EMAIL_LINK_${issueId}` : null, () =>
+    issueEmailLinkService.fetchEmailLink(workspaceSlug, projectId, issueId)
+  );
+  const showAccessSpecifier = !!project?.anchor || !!emailLink;
   const renderCommentCreationBox = useMemo(
     () => (
       <CommentCreate
@@ -83,9 +92,10 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
         activityOperations={activityOperations}
         showToolbarInitially
         projectId={projectId}
+        showAccessSpecifier={showAccessSpecifier}
       />
     ),
-    [workspaceSlug, issueId, activityOperations, projectId]
+    [workspaceSlug, issueId, activityOperations, projectId, showAccessSpecifier]
   );
   if (!project) return <></>;
 
@@ -117,7 +127,7 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
               issueId={issueId}
               selectedFilters={selectedFilters || defaultActivityFilters}
               activityOperations={activityOperations}
-              showAccessSpecifier={!!project.anchor}
+              showAccessSpecifier={showAccessSpecifier}
               disabled={disabled}
               sortOrder={sortOrder || E_SORT_ORDER.ASC}
             />
