@@ -193,6 +193,16 @@ services:
       args:
         DOCKER_BUILDKIT: 1
     restart: always
+    environment:
+      API_BASE_URL: http://api:8000
+      LIVE_SERVER_SECRET_KEY: ${LIVE_SERVER_SECRET_KEY}
+      LIVE_BASE_PATH: /live
+      CORS_ALLOWED_ORIGINS: https://${PARSEC_DOMAIN}
+      REDIS_HOST: plane-redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://plane-redis:6379/
+    depends_on:
+      - api
     networks:
       - default
       - coolify
