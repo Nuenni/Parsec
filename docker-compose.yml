@@ -61,11 +61,11 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-web-http.entrypoints=http
-      - traefik.http.routers.parsec-web-http.rule=Host(`${PARSEC_DOMAIN}`)
+      - traefik.http.routers.parsec-web-http.rule=Host(`pm.nafdo.de`)
       - traefik.http.routers.parsec-web-http.middlewares=parsec-redirect-to-https
       - traefik.http.middlewares.parsec-redirect-to-https.redirectscheme.scheme=https
       - traefik.http.routers.parsec-web-https.entrypoints=https
-      - traefik.http.routers.parsec-web-https.rule=Host(`${PARSEC_DOMAIN}`)
+      - traefik.http.routers.parsec-web-https.rule=Host(`pm.nafdo.de`)
       - traefik.http.routers.parsec-web-https.tls=true
       - traefik.http.routers.parsec-web-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-web.loadbalancer.server.port=3000
@@ -88,7 +88,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-admin-https.entrypoints=https
-      - traefik.http.routers.parsec-admin-https.rule=Host(`${PARSEC_DOMAIN}`) && PathPrefix(`/god-mode`)
+      - traefik.http.routers.parsec-admin-https.rule=Host(`pm.nafdo.de`) && PathPrefix(`/god-mode`)
       - traefik.http.routers.parsec-admin-https.tls=true
       - traefik.http.routers.parsec-admin-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-admin.loadbalancer.server.port=3000
@@ -111,7 +111,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-space-https.entrypoints=https
-      - traefik.http.routers.parsec-space-https.rule=Host(`${PARSEC_DOMAIN}`) && PathPrefix(`/spaces`)
+      - traefik.http.routers.parsec-space-https.rule=Host(`pm.nafdo.de`) && PathPrefix(`/spaces`)
       - traefik.http.routers.parsec-space-https.tls=true
       - traefik.http.routers.parsec-space-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-space.loadbalancer.server.port=3000
@@ -136,7 +136,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-api-https.entrypoints=https
-      - traefik.http.routers.parsec-api-https.rule=Host(`${PARSEC_DOMAIN}`) && (PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/static`))
+      - traefik.http.routers.parsec-api-https.rule=Host(`pm.nafdo.de`) && (PathPrefix(`/api`) || PathPrefix(`/auth`) || PathPrefix(`/static`))
       - traefik.http.routers.parsec-api-https.tls=true
       - traefik.http.routers.parsec-api-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-api.loadbalancer.server.port=8000
@@ -200,7 +200,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-live-https.entrypoints=https
-      - traefik.http.routers.parsec-live-https.rule=Host(`${PARSEC_DOMAIN}`) && PathPrefix(`/live`)
+      - traefik.http.routers.parsec-live-https.rule=Host(`pm.nafdo.de`) && PathPrefix(`/live`)
       - traefik.http.routers.parsec-live-https.tls=true
       - traefik.http.routers.parsec-live-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-live.loadbalancer.server.port=3000
@@ -257,7 +257,7 @@ services:
       - traefik.enable=true
       - traefik.docker.network=coolify
       - traefik.http.routers.parsec-minio-https.entrypoints=https
-      - traefik.http.routers.parsec-minio-https.rule=Host(`${PARSEC_DOMAIN}`) && PathPrefix(`/${AWS_S3_BUCKET_NAME:-uploads}`)
+      - traefik.http.routers.parsec-minio-https.rule=Host(`pm.nafdo.de`) && PathPrefix(`/uploads`)
       - traefik.http.routers.parsec-minio-https.tls=true
       - traefik.http.routers.parsec-minio-https.tls.certresolver=letsencrypt
       - traefik.http.services.parsec-minio.loadbalancer.server.port=9000
