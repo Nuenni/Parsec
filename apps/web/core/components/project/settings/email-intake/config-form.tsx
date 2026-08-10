@@ -7,12 +7,15 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { Button } from "@plane/propel/button";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TEmailIntakeConfig, TEmailIntakeConfigCreate } from "@plane/types";
 import { Input } from "@plane/ui";
 // services
+import { EmailIntakeConfigService } from "@/services/project/email-intake-config.service";
 import { ProjectStateService } from "@/services/project/project-state.service";
 
 const projectStateService = new ProjectStateService();
+const emailIntakeConfigService = new EmailIntakeConfigService();
 
 type Props = {
   workspaceSlug: string;
@@ -71,6 +74,8 @@ export function EmailIntakeConfigForm(props: Props) {
       : emptyForm
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+  const [availableFolders, setAvailableFolders] = useState<string[] | null>(null);
 
   const update = <K extends keyof TEmailIntakeConfigCreate>(key: K, value: TEmailIntakeConfigCreate[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -95,6 +100,32 @@ export function EmailIntakeConfigForm(props: Props) {
       form.smtp_password.trim();
 
   const selectClassName = "rounded-md border-[0.5px] border-subtle-1 bg-layer-2 px-3 py-2 text-13 focus:outline-none";
+
+  const handleListFolders = async () => {
+    setIsLoadingFolders(true);
+    try {
+      const folders = await emailIntakeConfigService.listImapFolders(workspaceSlug, projectId, {
+        id: initialValue?.id,
+        imap_host: form.imap_host,
+        imap_port: form.imap_port,
+        imap_username: form.imap_username,
+        imap_password: form.imap_password || undefined,
+        imap_use_ssl: form.imap_use_ssl,
+      });
+      setAvailableFolders(folders);
+      if (folders.length === 0) {
+        setToast({ type: TOAST_TYPE.WARNING, title: "No folders found" });
+      }
+    } catch (error: any) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Could not list folders",
+        message: error?.error ?? "Check the IMAP host/username/password above first.",
+      });
+    } finally {
+      setIsLoadingFolders(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -159,17 +190,47 @@ export function EmailIntakeConfigForm(props: Props) {
           <label htmlFor="email-intake-imap-folder" className="text-11 text-tertiary">
             Folder to poll
           </label>
-          <Input
-            id="email-intake-imap-folder"
-            value={form.imap_folder}
-            onChange={(event) => update("imap_folder", event.target.value)}
-            placeholder="INBOX"
-            className="px-3 py-2"
-          />
+          <div className="flex items-center gap-2">
+            {availableFolders && availableFolders.length > 0 ? (
+              <select
+                id="email-intake-imap-folder"
+                className={`${selectClassName} flex-1`}
+                value={form.imap_folder}
+                onChange={(event) => update("imap_folder", event.target.value)}
+              >
+                {!availableFolders.includes(form.imap_folder) && (
+                  <option value={form.imap_folder}>{form.imap_folder}</option>
+                )}
+                {availableFolders.map((folder) => (
+                  <option key={folder} value={folder}>
+                    {folder}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                id="email-intake-imap-folder"
+                value={form.imap_folder}
+                onChange={(event) => update("imap_folder", event.target.value)}
+                placeholder="INBOX"
+                className="flex-1 px-3 py-2"
+              />
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleListFolders}
+              loading={isLoadingFolders}
+              disabled={!form.imap_host.trim() || !form.imap_username.trim()}
+            >
+              List folders
+            </Button>
+          </div>
           <p className="text-11 text-tertiary">
             Defaults to INBOX. If this mailbox is a shared alias (e.g. a Fastmail alias landing in your personal inbox),
-            set up a server-side rule to move mail for that alias into a dedicated folder and enter that folder name
-            here.
+            set up a server-side rule to move mail for that alias into a dedicated folder, then use "List folders" to
+            pick it (needs the IMAP host/username/password above filled in first - password can be left blank here if
+            you&apos;re editing an existing, already-saved config).
           </p>
         </div>
       </div>

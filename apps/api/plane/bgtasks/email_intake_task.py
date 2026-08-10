@@ -262,6 +262,37 @@ def test_imap_connection(host, port, username, password, use_ssl, folder="INBOX"
         return str(e)
 
 
+def list_imap_folders(host, port, username, password, use_ssl):
+    """Returns (folder_names, None) on success, or (None, error_message) on failure.
+
+    Lets the settings UI offer a dropdown of real folders instead of requiring the
+    folder name to be typed by hand (folder names/hierarchy separators vary by
+    provider, e.g. Fastmail labels showing up as top-level IMAP folders).
+    """
+    try:
+        connection = (
+            imaplib.IMAP4_SSL(host, port, timeout=10) if use_ssl else imaplib.IMAP4(host, port, timeout=10)
+        )
+        try:
+            connection.login(username, password)
+            typ, mailbox_lines = connection.list()
+            if typ != "OK":
+                return None, "Could not list mailboxes"
+            folders = []
+            for line in mailbox_lines:
+                if not line:
+                    continue
+                decoded = line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
+                match = re.search(r'"([^"]*)"\s*$', decoded) or re.search(r"\s(\S+)$", decoded)
+                if match:
+                    folders.append(match.group(1))
+            return folders, None
+        finally:
+            connection.logout()
+    except Exception as e:
+        return None, str(e)
+
+
 def test_smtp_connection(host, port, username, password, use_tls):
     """Returns None on success, or an error message string."""
     try:

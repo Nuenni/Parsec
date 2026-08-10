@@ -6,7 +6,7 @@
 from .base import BaseAPIView, BaseViewSet
 from plane.app.permissions import allow_permission, ProjectBasePermission, ProjectEntityPermission, ROLE
 from plane.app.serializers import EmailIntakeConfigSerializer
-from plane.bgtasks.email_intake_task import test_imap_connection, test_smtp_connection
+from plane.bgtasks.email_intake_task import list_imap_folders, test_imap_connection, test_smtp_connection
 from plane.db.models import EmailIntakeConfig, EmailIssueLink
 from plane.license.utils.encryption import decrypt_data
 from rest_framework.response import Response
@@ -109,6 +109,26 @@ class EmailIntakeConfigViewSet(BaseViewSet):
     @allow_permission([ROLE.ADMIN])
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+    @allow_permission([ROLE.ADMIN])
+    def list_imap_folders_action(self, request, slug, project_id):
+        data = request.data
+        password = data.get("imap_password")
+        config_id = data.get("id")
+        if not password and config_id:
+            instance = EmailIntakeConfig.objects.filter(pk=config_id, project_id=project_id).first()
+            if instance is not None:
+                password = decrypt_data(instance.imap_password)
+        folders, error = list_imap_folders(
+            data.get("imap_host"),
+            data.get("imap_port", 993),
+            data.get("imap_username"),
+            password,
+            data.get("imap_use_ssl", True),
+        )
+        if error:
+            return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"folders": folders}, status=status.HTTP_200_OK)
 
 
 class IssueEmailLinkEndpoint(BaseAPIView):

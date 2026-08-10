@@ -20,6 +20,11 @@ urlpatterns = [
         name="project-email-intake-config-detail",
     ),
     path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/email-intake-configs/list-imap-folders/",
+        EmailIntakeConfigViewSet.as_view({"post": "list_imap_folders_action"}),
+        name="project-email-intake-list-imap-folders",
+    ),
+    path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/email-link/",
         IssueEmailLinkEndpoint.as_view(),
         name="issue-email-link",

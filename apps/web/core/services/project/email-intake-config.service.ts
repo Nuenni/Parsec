@@ -51,4 +51,26 @@ export class EmailIntakeConfigService extends APIService {
       throw error?.response?.data;
     });
   }
+
+  async listImapFolders(
+    workspaceSlug: string,
+    projectId: string,
+    data: {
+      id?: string;
+      imap_host: string;
+      imap_port: number;
+      imap_username: string;
+      imap_password?: string;
+      imap_use_ssl: boolean;
+    }
+  ): Promise<string[]> {
+    return this.post(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/email-intake-configs/list-imap-folders/`,
+      data
+    )
+      .then((response) => response?.data?.folders ?? [])
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
 }
