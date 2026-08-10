@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+import re
+
 # Django imports
 from django.urls import reverse
 
@@ -11,6 +13,12 @@ from rest_framework import serializers
 # Module imports
 from .base import BaseSerializer
 from plane.db.models import GithubCommitLink, GithubProjectLink, GithubPullRequestLink
+
+# Strips a pasted GitHub URL down to "owner/repo" - the API paths built elsewhere
+# (e.g. /repos/{repository_full_name}/issues/...) assume this bare form, so a
+# pasted full URL silently breaks every outbound sync call and the "view on
+# GitHub" link.
+GITHUB_URL_PREFIX_RE = re.compile(r"^(?:https?://)?(?:www\.)?github\.com/", re.IGNORECASE)
 
 
 class GithubPullRequestLinkSerializer(BaseSerializer):
@@ -76,6 +84,9 @@ class GithubProjectLinkSerializer(BaseSerializer):
             "last_webhook_received_at",
             "created_at",
         ]
+
+    def validate_repository_full_name(self, value):
+        return GITHUB_URL_PREFIX_RE.sub("", value.strip()).strip("/")
 
     def get_webhook_url(self, obj):
         request = self.context.get("request")
