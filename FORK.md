@@ -44,3 +44,18 @@ distributed via the repository:
 
 Cadence for upstream merges: immediately for security updates, otherwise
 occasionally as needed.
+
+## Deployment notes
+
+`web` and `admin` are served by the nginx config under
+`apps/*/nginx/nginx.conf`. Both now set `absolute_redirect off;` and
+`port_in_redirect off;` - behind Traefik terminating TLS, nginx's own
+directory-redirect (`/some-path` -> `/some-path/`) otherwise builds an
+absolute `Location` from its own `$scheme`/listen port, leaking an internal
+`http://host:3000/...` URL to clients instead of a relative path.
+
+`space` does **not** use nginx in production - its Docker image runs
+`react-router-serve` directly (see `Dockerfile.space`'s final stage).
+`apps/space/nginx/nginx.conf` still exists in the repo (unmodified from
+upstream) but isn't part of the deployed image; don't assume a change there
+takes effect.
