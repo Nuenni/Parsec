@@ -156,6 +156,9 @@ def process_parsed_email(config, parsed):
     """Given a parsed inbound email and its EmailIntakeConfig, either append it to an
     existing thread or create a new PENDING intake issue. Returns the affected Issue.
     """
+    if parsed["message_id"] and _message_id_seen(config.project_id, parsed["message_id"]):
+        return None
+
     thread_ids = {mid for mid in ([parsed["in_reply_to"]] + parsed["references"]) if mid}
     bot = _get_intake_bot_user()
 
@@ -253,6 +256,20 @@ def _find_link_by_message_ids(project_id, thread_ids):
     return None
 
 
+def _message_id_seen(project_id, message_id):
+    """Whether this exact message was already turned into an issue or comment.
+
+    The IMAP poll fetches ALL messages in the folder rather than just UNSEEN ones,
+    because mail rules that auto-mark-as-read (e.g. so the inbox doesn't show an
+    unread badge) would otherwise hide new mail from the poller entirely. This check
+    is what keeps re-fetching the same mail idempotent.
+    """
+    for link in EmailIssueLink.objects.filter(project_id=project_id).only("message_ids"):
+        if message_id in (link.message_ids or []):
+            return True
+    return False
+
+
 def test_imap_connection(host, port, username, password, use_ssl, folder="INBOX"):
     """Returns None on success, or an error message string."""
     try:
@@ -335,7 +352,10 @@ def _poll_single_inbox(config):
     try:
         connection.login(config.imap_username, decrypt_data(config.imap_password))
         connection.select(_quote_mailbox(config.imap_folder or "INBOX"))
-        _, message_numbers = connection.search(None, "UNSEEN")
+        # Not UNSEEN: mail rules that auto-mark-as-read on arrival (e.g. to keep an
+        # inbox unread-badge clean) would otherwise hide mail from us before we ever
+        # see it. Idempotency comes from _message_id_seen() instead.
+        _, message_numbers = connection.search(None, "ALL")
         for num in message_numbers[0].split():
             _, msg_data = connection.fetch(num, "(RFC822)")
             raw_bytes = msg_data[0][1]
