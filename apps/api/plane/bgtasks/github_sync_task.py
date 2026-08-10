@@ -626,12 +626,11 @@ def sync_comment_to_github(self, comment_id):
 
         repository_full_name, _, number = issue.external_id.rpartition("#")
         body = strip_tags(comment.comment_html) or comment.comment_stripped
-        author_name = comment.actor.display_name if comment.actor else "Someone"
         _github_api_request(
             "POST",
             f"/repos/{repository_full_name}/issues/{number}/comments",
             repository_full_name,
-            json={"body": f"**{author_name}** commented in Parsec:\n\n{body}"},
+            json={"body": body},
         )
     except Exception as e:
         log_exception(e)
