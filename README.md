@@ -43,3 +43,9 @@ setup instead of Plane's bundled Caddy proxy.
 
 AGPL-3.0-only. "Plane" is a trademark of Plane Software, Inc. This project
 is not affiliated with, and is not endorsed by, Plane Software, Inc.
+
+## Forking Parsec
+
+The code is AGPL-3.0 — feel free to fork it. The name and logo "Parsec"
+are not covered by that licence, so please replace the branding with your
+own, the way we replaced Plane's. See [FORK.md](./FORK.md) for the rest.
