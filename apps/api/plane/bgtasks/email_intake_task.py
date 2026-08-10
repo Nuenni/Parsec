@@ -425,7 +425,7 @@ def _extract_inline_images(comment_html):
     attachments is a list of (cid, filename, content_type, data) tuples.
     """
     from plane.db.models import FileAsset
-    from plane.settings.storage import S3Storage
+    from plane.utils.parsec_s3_storage import ParsecS3Storage
 
     attachments = []
 
@@ -434,7 +434,7 @@ def _extract_inline_images(comment_html):
         asset = FileAsset.objects.filter(pk=asset_id).first()
         if asset is None or not asset.asset:
             return ""
-        data, content_type = S3Storage().get_object_bytes(asset.asset.name)
+        data, content_type = ParsecS3Storage().get_object_bytes(asset.asset.name)
         if data is None:
             return ""
         cid = f"{asset_id}@parsec"
