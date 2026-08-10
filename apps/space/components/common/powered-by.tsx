@@ -6,7 +6,7 @@
 
 import { WEBSITE_URL } from "@plane/constants";
 // assets
-import { PlaneLogo } from "@plane/propel/icons";
+import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 
 type TPoweredBy = {
   disabled?: boolean;
@@ -25,9 +25,9 @@ export function PoweredBy(props: TPoweredBy) {
       target="_blank"
       rel="noreferrer noopener"
     >
-      <PlaneLogo className="h-3 w-auto text-primary" />
+      <img src={parsecMark} alt="Parsec" className="h-3 w-auto" />
       <div className="text-11">
-        Powered by <span className="font-semibold">Plane Publish</span>
+        Powered by <span className="font-semibold">Parsec</span>
       </div>
     </a>
   );

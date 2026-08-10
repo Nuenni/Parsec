@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+import re
+
 # Third party imports
 from rest_framework import serializers
 
@@ -9,6 +11,12 @@ from rest_framework import serializers
 from .base import BaseSerializer
 from plane.db.models import EmailIntakeConfig
 from plane.license.utils.encryption import encrypt_data
+
+# from_name is combined with email_address into "Name <email>" when sending (see
+# email_intake_task._send_threaded_email). If the address is pasted into this field
+# too - e.g. "Support <support@x.com>" - that combination doubles up into an
+# unparseable header, so strip any trailing "<...>" the user already included.
+TRAILING_ANGLE_ADDRESS_RE = re.compile(r"\s*<[^<>]*>\s*$")
 
 
 class EmailIntakeConfigSerializer(BaseSerializer):
@@ -47,6 +55,9 @@ class EmailIntakeConfigSerializer(BaseSerializer):
             "state_on_agent_reply",
         ]
         read_only_fields = ["id", "project", "last_polled_at", "created_at"]
+
+    def validate_from_name(self, value):
+        return TRAILING_ANGLE_ADDRESS_RE.sub("", value).strip()
 
     def get_imap_password_set(self, obj):
         return bool(obj.imap_password)

@@ -15,12 +15,12 @@ import { ROLE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // types
 import { Button } from "@plane/propel/button";
-import { PlaneLogo } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspaceMemberInvitation } from "@plane/types";
 import { truncateText } from "@plane/utils";
 // assets
 import emptyInvitation from "@/app/assets/empty-state/invitation.svg?url";
+import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 // components
 import { EmptyState } from "@/components/common/empty-state";
 import { WorkspaceLogo } from "@/components/workspace/logo";
@@ -76,15 +76,18 @@ function UserInvitationsPage() {
 
     setIsJoiningWorkspaces(true);
 
+    // oxlint-disable-next-line promise/always-return
     workspaceService
       .joinWorkspaces({ invitations: invitationsRespond })
       .then(() => {
         mutate(USER_WORKSPACES_LIST);
         const firstInviteId = invitationsRespond[0];
         const redirectWorkspace = invitations?.find((i) => i.id === firstInviteId)?.workspace;
+        // oxlint-disable-next-line promise/always-return
         updateUserProfile({ last_workspace_id: redirectWorkspace?.id })
           .then(() => {
             setIsJoiningWorkspaces(false);
+            // oxlint-disable-next-line promise/always-return
             fetchWorkspaces().then(() => {
               router.push(`/${redirectWorkspace?.slug}`);
             });
@@ -117,7 +120,7 @@ function UserInvitationsPage() {
             href="/"
             className="absolute top-1/2 left-5 z-10 grid -translate-y-1/2 place-items-center px-3 sm:top-12 sm:left-1/2 sm:-translate-x-[15px] sm:translate-y-0 sm:px-0 sm:py-5 md:left-1/3"
           >
-            <PlaneLogo className="h-9 w-auto text-primary" />
+            <img src={parsecMark} alt="Parsec" className="h-9 w-auto" />
           </Link>
           <div className="absolute top-1/4 right-4 -translate-y-1/2 text-13 text-primary sm:fixed sm:top-12 sm:right-16 sm:translate-y-0 sm:py-5">
             {currentUser?.email}
@@ -134,6 +137,7 @@ function UserInvitationsPage() {
                     const isSelected = invitationsRespond.includes(invitation.id);
 
                     return (
+                      // oxlint-disable-next-line click-events-have-key-events no-static-element-interactions
                       <div
                         key={invitation.id}
                         className={`flex cursor-pointer items-center gap-2 rounded-sm border px-3.5 py-5 ${

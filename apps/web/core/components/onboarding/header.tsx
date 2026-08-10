@@ -6,7 +6,7 @@
 
 import { observer } from "mobx-react";
 // plane imports
-import { PlaneLockup, ChevronLeftIcon } from "@plane/propel/icons";
+import { ChevronLeftIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TOnboardingStep } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
@@ -16,6 +16,7 @@ import { useInstance } from "@/hooks/store/use-instance";
 import { useUser } from "@/hooks/store/user";
 // local imports
 import { SwitchAccountDropdown } from "./switch-account-dropdown";
+import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 
 type OnboardingHeaderProps = {
   currentStep: EOnboardingSteps;
@@ -83,7 +84,7 @@ export const OnboardingHeader = observer(function OnboardingHeader(props: Onboar
               <ChevronLeftIcon className="size-6 text-placeholder" />
             </button>
           )}
-          <PlaneLockup height={20} width={95} className="text-primary" />
+          <img src={parsecMark} alt="Parsec" height={20} width={20} />
         </div>
         <SwitchAccountDropdown fullName={userName} />
       </div>

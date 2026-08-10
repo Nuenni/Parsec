@@ -8,7 +8,7 @@ import imaplib
 import json
 import re
 from email.header import decode_header
-from email.utils import parseaddr
+from email.utils import formataddr, parseaddr
 
 # Django imports
 from bs4 import BeautifulSoup
@@ -44,6 +44,11 @@ QUOTE_SPLIT_RE = re.compile(
     r"\n\s*(>.*|On .{0,80} wrote:|-{2,}\s*Original Message\s*-{2,}|Am .{0,80} schrieb.*:)",
     re.IGNORECASE,
 )
+
+# config.from_name is meant to be a bare display name ("Support"), but if it was
+# saved with the address already appended ("Support <support@x.com>") combining it
+# with email_address below would double up into an unparseable header - strip it.
+TRAILING_ANGLE_ADDRESS_RE = re.compile(r"\s*<[^<>]*>\s*$")
 
 
 def _quote_mailbox(name):
@@ -461,7 +466,8 @@ def _send_threaded_email(config, link, subject, plain_body, html_body=None, inli
 
     new_message_id = make_msgid()
     references = " ".join(link.message_ids or [])
-    from_email = f"{config.from_name} <{config.email_address}>" if config.from_name else config.email_address
+    display_name = TRAILING_ANGLE_ADDRESS_RE.sub("", config.from_name).strip() if config.from_name else ""
+    from_email = formataddr((display_name, config.email_address)) if display_name else config.email_address
 
     email_message = EmailMultiAlternatives(
         subject=subject,

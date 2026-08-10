@@ -22,7 +22,6 @@ import {
 import { useOAuthConfig } from "@/hooks/oauth";
 import { useInstance } from "@/hooks/store/use-instance";
 // local imports
-import { TermsAndConditions } from "../terms-and-conditions";
 import { AuthBanner } from "./auth-banner";
 import { AuthHeader, AuthHeaderBase } from "./auth-header";
 import { AuthFormRoot } from "./form-root";
@@ -137,14 +136,17 @@ export const AuthRoot = observer(function AuthRoot(props: TAuthRoot) {
           authStep={authStep}
           authMode={authMode}
           email={email}
+          // oxlint-disable-next-line no-shadow
           setEmail={(email) => setEmail(email)}
+          // oxlint-disable-next-line no-shadow
           setAuthMode={(authMode) => setAuthMode(authMode)}
+          // oxlint-disable-next-line no-shadow
           setAuthStep={(authStep) => setAuthStep(authStep)}
+          // oxlint-disable-next-line no-shadow
           setErrorInfo={(errorInfo) => setErrorInfo(errorInfo)}
           currentAuthMode={currentAuthMode}
         />
       )}
-      <TermsAndConditions authType={authMode} />
     </AuthContainer>
   );
 });

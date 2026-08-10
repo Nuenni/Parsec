@@ -5,9 +5,9 @@
  */
 
 import { observer } from "mobx-react";
-import { PlaneLockup } from "@plane/propel/icons";
 // assets
 import UserLoggedInImage from "@/app/assets/user-logged-in.svg?url";
+import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 // components
 import { PoweredBy } from "@/components/common/powered-by";
 import { UserAvatar } from "@/components/issues/navbar/user-avatar";
@@ -23,7 +23,7 @@ export const UserLoggedIn = observer(function UserLoggedIn() {
   return (
     <div className="flex h-screen w-screen flex-col">
       <div className="relative flex w-full items-center justify-between gap-4 border-b border-subtle px-6 py-5">
-        <PlaneLockup className="h-6 w-auto text-primary" />
+        <img src={parsecMark} alt="Parsec" className="h-6 w-auto" />
         <UserAvatar />
       </div>
 
