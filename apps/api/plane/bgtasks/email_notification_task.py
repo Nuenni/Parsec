@@ -30,6 +30,16 @@ def remove_unwanted_characters(input_text):
     return processed_text
 
 
+def _actor_avatar_url(base_api, actor):
+    # actor.avatar_url is None for users with no avatar set (e.g. bot users like the
+    # email-intake/github-sync actors) - naively f-string-joining that produces the
+    # literal string "None" appended to the base URL, a non-empty but broken <img src>
+    # that the templates' "{% if avatar_url %}" check can't distinguish from a real one.
+    if not actor.avatar_url:
+        return None
+    return f"{base_api}{actor.avatar_url}"
+
+
 # acquire and delete redis lock
 def acquire_lock(lock_id, expire_time=300):
     redis_client = redis_instance()
@@ -197,7 +207,7 @@ def send_email_notification(issue_id, notification_data, receiver_id, email_noti
                         {
                             "actor_comments": comment,
                             "actor_detail": {
-                                "avatar_url": f"{base_api}{actor.avatar_url}",
+                                "avatar_url": _actor_avatar_url(base_api, actor),
                                 "first_name": actor.first_name,
                                 "last_name": actor.last_name,
                             },
@@ -210,7 +220,7 @@ def send_email_notification(issue_id, notification_data, receiver_id, email_noti
                         {
                             "actor_comments": mention,
                             "actor_detail": {
-                                "avatar_url": f"{base_api}{actor.avatar_url}",
+                                "avatar_url": _actor_avatar_url(base_api, actor),
                                 "first_name": actor.first_name,
                                 "last_name": actor.last_name,
                             },
@@ -224,7 +234,7 @@ def send_email_notification(issue_id, notification_data, receiver_id, email_noti
                     template_data.append(
                         {
                             "actor_detail": {
-                                "avatar_url": f"{base_api}{actor.avatar_url}",
+                                "avatar_url": _actor_avatar_url(base_api, actor),
                                 "first_name": actor.first_name,
                                 "last_name": actor.last_name,
                             },
