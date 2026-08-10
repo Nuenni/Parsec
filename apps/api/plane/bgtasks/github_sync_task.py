@@ -6,9 +6,11 @@
 import json
 import os
 import re
+import time
 from datetime import datetime
 
 # Third party imports
+import jwt
 import requests
 from celery import shared_task
 from django.utils import timezone
@@ -16,6 +18,7 @@ from django.utils import timezone
 # Module imports
 from plane.bgtasks.issue_activities_task import issue_activity
 from plane.db.models import (
+    EstimatePoint,
     GithubCommitLink,
     GithubProjectLink,
     GithubPullRequestLink,
@@ -28,6 +31,14 @@ from plane.db.models import (
     User,
 )
 from plane.utils.exception_logger import log_exception
+
+# GitHub's own org-level Issue Fields feature (GA July 2026) - distinct from
+# Projects v2, plain REST + the classic "issues" webhook event
+# (action="field_added"/"field_removed"). "Priority" is a direct match for
+# Plane's own Issue.priority; "Effort" has no built-in equivalent, so it's
+# mapped onto the project's Estimate (categories) system instead - see
+# _issue_field_definitions/sync_issue_field_from_github/sync_issue_field_to_github.
+SYNCED_ISSUE_FIELD_NAMES = {"priority", "effort"}
 
 GITHUB_SYNC_BOT_EMAIL = "github-sync@parsec.internal"
 GITHUB_API_BASE_URL = "https://api.github.com"
@@ -424,10 +435,65 @@ def _github_bot_user_id():
     return _get_sync_bot_user().id
 
 
-def _github_api_request(method, path, **kwargs):
-    token = os.environ.get("GITHUB_SYNC_TOKEN")
-    if not token:
-        return None
+def _github_app_jwt():
+    """Short-lived JWT identifying the GitHub App itself, used only to mint
+    per-installation access tokens below - never sent as the request auth.
+    """
+    app_id = os.environ.get("GITHUB_APP_ID")
+    private_key = os.environ.get("GITHUB_APP_PRIVATE_KEY", "").replace("\\n", "\n")
+    now = int(time.time())
+    payload = {"iat": now - 60, "exp": now + 9 * 60, "iss": app_id}
+    return jwt.encode(payload, private_key, algorithm="RS256")
+
+
+def _get_installation_token(repository_full_name):
+    """Exchanges the App's identity for a ~1h access token scoped to whichever
+    installation covers this repo, caching it in Redis until shortly before expiry.
+    Posting/labeling/closing as the App's own bot identity (instead of a maintainer's
+    personal token) is what lets sync_comment_to_github's "**{author}** commented in
+    Parsec" text mean something - the GitHub-side actor is always the App, and the
+    text is the only thing distinguishing which Parsec user actually replied.
+    """
+    from plane.settings.redis import redis_instance
+
+    redis_client = redis_instance()
+    cache_key = f"github_app_installation_token:{repository_full_name}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        return cached.decode()
+
+    app_jwt = _github_app_jwt()
+    app_headers = {
+        "Authorization": f"Bearer {app_jwt}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    installation_resp = requests.get(
+        f"{GITHUB_API_BASE_URL}/repos/{repository_full_name}/installation", headers=app_headers, timeout=10
+    )
+    installation_resp.raise_for_status()
+    installation_id = installation_resp.json()["id"]
+
+    token_resp = requests.post(
+        f"{GITHUB_API_BASE_URL}/app/installations/{installation_id}/access_tokens",
+        headers=app_headers,
+        timeout=10,
+    )
+    token_resp.raise_for_status()
+    token = token_resp.json()["token"]
+    # Installation tokens are valid ~1h; refresh a few minutes early rather than
+    # racing the expiry on a request that's mid-flight when the cache entry lapses.
+    redis_client.set(cache_key, token, ex=55 * 60)
+    return token
+
+
+def _github_api_request(method, path, repository_full_name=None, **kwargs):
+    if os.environ.get("GITHUB_APP_ID") and repository_full_name:
+        token = _get_installation_token(repository_full_name)
+    else:
+        token = os.environ.get("GITHUB_SYNC_TOKEN")
+        if not token:
+            return None
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
@@ -436,6 +502,108 @@ def _github_api_request(method, path, **kwargs):
     response = requests.request(method, f"{GITHUB_API_BASE_URL}{path}", headers=headers, timeout=10, **kwargs)
     response.raise_for_status()
     return response
+
+
+def _issue_field_definitions(repository_full_name):
+    """Maps lowercased Issue Field name -> numeric field id for the org that owns
+    repository_full_name, cached since these definitions rarely change.
+    """
+    from plane.settings.redis import redis_instance
+
+    org = repository_full_name.split("/", 1)[0]
+    redis_client = redis_instance()
+    cache_key = f"github_issue_field_defs:{org}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        return json.loads(cached)
+
+    response = _github_api_request("GET", f"/orgs/{org}/issue-fields", repository_full_name)
+    if response is None:
+        return {}
+    definitions = {field["name"].strip().lower(): field["id"] for field in response.json()}
+    redis_client.set(cache_key, json.dumps(definitions), ex=24 * 60 * 60)
+    return definitions
+
+
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+def sync_issue_field_to_github(self, issue_id):
+    """Outbound: Priority and Effort changes on a github-linked issue -> GitHub
+    Issue Fields. Priority maps directly to Plane's own priority field; Effort
+    maps to the project's Estimate (categories) point, matched by name.
+    """
+    try:
+        issue = Issue.objects.select_related("estimate_point").filter(pk=issue_id).first()
+        if issue is None or issue.external_source != "github" or issue.updated_by_id == _github_bot_user_id():
+            return
+        repository_full_name, _, number = issue.external_id.rpartition("#")
+        field_ids = _issue_field_definitions(repository_full_name)
+
+        values = []
+        if "priority" in field_ids and issue.priority != "none":
+            values.append({"field_id": field_ids["priority"], "value": issue.priority.title()})
+        if "effort" in field_ids and issue.estimate_point is not None:
+            values.append({"field_id": field_ids["effort"], "value": issue.estimate_point.value})
+        if not values:
+            return
+
+        _github_api_request(
+            "POST",
+            f"/repos/{repository_full_name}/issues/{number}/issue-field-values",
+            repository_full_name,
+            json={"issue_field_values": values},
+        )
+    except Exception as e:
+        log_exception(e)
+        raise
+
+
+@shared_task
+def sync_issue_field_from_github(link_id, payload):
+    """Inbound: a GitHub Issue Field value changed on a synced issue. Only
+    "Priority" and "Effort" are mapped - every other org field is ignored.
+    """
+    try:
+        link = GithubProjectLink.objects.filter(pk=link_id, is_active=True, sync_issues=True).first()
+        if link is None:
+            return
+
+        field_name = ((payload.get("issue_field") or {}).get("name") or "").strip().lower()
+        if field_name not in SYNCED_ISSUE_FIELD_NAMES:
+            return
+
+        gh_issue = payload.get("issue") or {}
+        external_id = f"{link.repository_full_name}#{gh_issue.get('number')}"
+        issue = Issue.objects.filter(
+            project_id=link.project_id, external_source="github", external_id=external_id
+        ).first()
+        if issue is None:
+            return
+
+        removed = payload.get("action") == "field_removed"
+        option_name = "" if removed else ((payload.get("issue_field_value") or {}).get("option") or {}).get("name", "")
+        option_name = (option_name or "").strip()
+
+        bot = _get_sync_bot_user()
+        if field_name == "priority":
+            new_priority = option_name.lower() if option_name else "none"
+            if new_priority not in dict(Issue.PRIORITY_CHOICES):
+                return
+            if issue.priority != new_priority:
+                issue.priority = new_priority
+                issue.updated_by = bot
+                issue.save(update_fields=["priority", "updated_by"])
+        elif field_name == "effort":
+            new_point = None
+            if option_name and issue.project.estimate_id:
+                new_point = EstimatePoint.objects.filter(
+                    estimate_id=issue.project.estimate_id, value__iexact=option_name
+                ).first()
+            if issue.estimate_point_id != (new_point.id if new_point else None):
+                issue.estimate_point = new_point
+                issue.updated_by = bot
+                issue.save(update_fields=["estimate_point", "updated_by"])
+    except Exception as e:
+        log_exception(e)
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
@@ -462,6 +630,7 @@ def sync_comment_to_github(self, comment_id):
         _github_api_request(
             "POST",
             f"/repos/{repository_full_name}/issues/{number}/comments",
+            repository_full_name,
             json={"body": f"**{author_name}** commented in Parsec:\n\n{body}"},
         )
     except Exception as e:
@@ -479,6 +648,7 @@ def sync_issue_state_to_github(self, issue_id, is_closed):
         _github_api_request(
             "PATCH",
             f"/repos/{repository_full_name}/issues/{number}",
+            repository_full_name,
             json={"state": "closed" if is_closed else "open"},
         )
     except Exception as e:
@@ -499,6 +669,7 @@ def sync_issue_labels_to_github(self, issue_id):
         _github_api_request(
             "PUT",
             f"/repos/{repository_full_name}/issues/{number}/labels",
+            repository_full_name,
             json={"labels": label_names},
         )
     except Exception as e:

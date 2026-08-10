@@ -24,6 +24,7 @@ from plane.bgtasks.github_sync_task import (
     sync_check_status_from_github,
     sync_issue_from_github,
     sync_issue_comment_from_github,
+    sync_issue_field_from_github,
     sync_pr_review_from_github,
     sync_commits_from_github,
 )
@@ -61,6 +62,8 @@ class GithubWebhookEndpoint(BaseAPIView):
             sync_pull_request_from_github.delay(link_id=str(link.id), payload=payload)
         elif event in ("check_suite", "check_run"):
             sync_check_status_from_github.delay(link_id=str(link.id), event=event, payload=payload)
+        elif event == "issues" and payload.get("action") in ("field_added", "field_removed") and link.sync_issues:
+            sync_issue_field_from_github.delay(link_id=str(link.id), payload=payload)
         elif event == "issues" and link.sync_issues:
             sync_issue_from_github.delay(link_id=str(link.id), payload=payload)
         elif event == "issue_comment" and link.sync_issues:

@@ -44,7 +44,11 @@ from plane.bgtasks.issue_activities_task import issue_activity
 from plane.bgtasks.issue_description_version_task import issue_description_version_task
 from plane.bgtasks.recent_visited_task import recent_visited_task
 from plane.bgtasks.webhook_task import model_activity
-from plane.bgtasks.github_sync_task import sync_issue_state_to_github, sync_issue_labels_to_github
+from plane.bgtasks.github_sync_task import (
+    sync_issue_state_to_github,
+    sync_issue_labels_to_github,
+    sync_issue_field_to_github,
+)
 from plane.bgtasks.email_intake_task import sync_issue_state_to_email
 from plane.db.models import (
     CycleIssue,
@@ -679,6 +683,8 @@ class IssueViewSet(BaseViewSet):
 
         current_instance = json.dumps(IssueDetailSerializer(issue).data, cls=DjangoJSONEncoder)
         old_state_id = issue.state_id
+        old_priority = issue.priority
+        old_estimate_point_id = issue.estimate_point_id
         old_label_ids = set(
             IssueLabel.objects.filter(issue_id=pk, deleted_at__isnull=True).values_list("label_id", flat=True)
         )
@@ -702,6 +708,9 @@ class IssueViewSet(BaseViewSet):
             )
             if new_label_ids != old_label_ids:
                 sync_issue_labels_to_github.delay(issue_id=str(pk))
+            issue.refresh_from_db(fields=["priority", "estimate_point_id"])
+            if issue.priority != old_priority or issue.estimate_point_id != old_estimate_point_id:
+                sync_issue_field_to_github.delay(issue_id=str(pk))
             # Check if the update is a migration description update
             is_migration_description_update = skip_activity and is_description_update
             # Log all the updates
