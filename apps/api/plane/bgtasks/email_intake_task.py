@@ -449,14 +449,17 @@ def _render_email_html(config, eyebrow, heading, body_html):
     brand_name = config.from_name or config.email_address
     template = config.html_template.strip() or EMAIL_HTML_TEMPLATE
     replacements = {
-        "{{ brand_name }}": brand_name,
-        "{{ eyebrow }}": eyebrow,
-        "{{ heading }}": heading,
-        "{{ body }}": body_html,
-        "{{ signature }}": config.signature_html or "",
+        "brand_name": brand_name,
+        "eyebrow": eyebrow,
+        "heading": heading,
+        "body": body_html,
+        "signature": config.signature_html or "",
     }
-    for placeholder, value in replacements.items():
-        template = template.replace(placeholder, value)
+    for name, value in replacements.items():
+        # Tolerate a custom template's placeholder spacing varying from the
+        # canonical "{{ name }}" (e.g. "{{name}}" or "{{ name}}") so a minor
+        # typo doesn't leak a literal, unreplaced placeholder into the email.
+        template = re.sub(r"\{\{\s*" + name + r"\s*\}\}", lambda _match: value, template)
     return template
 
 
