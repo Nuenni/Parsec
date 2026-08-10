@@ -6,7 +6,7 @@
 
 import { observer } from "mobx-react";
 // ui
-import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
+import { EModalPosition, ModalCore } from "@plane/ui";
 // plane web components
 import { ProductUpdatesChangelog } from "@/components/global/product-updates/changelog";
 import { ProductUpdatesHeader } from "@/components/global/product-updates/header";
@@ -20,7 +20,7 @@ export const ProductUpdatesModal = observer(function ProductUpdatesModal(props: 
   const { isOpen, handleClose } = props;
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.XXXXL}>
+    <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER}>
       <ProductUpdatesHeader />
       <ProductUpdatesChangelog />
     </ModalCore>
