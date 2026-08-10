@@ -15,6 +15,7 @@ import { useTimeLineRelationOptions } from "@/components/relations";
 // local imports
 import { AttachmentsCollapsible } from "./attachments";
 import { GithubCommitsCollapsible } from "./github-commits/root";
+import { GithubIssueLinkChip } from "./github-issue-link/root";
 import { GithubPullRequestsCollapsible } from "./github-prs/root";
 import { LinksCollapsible } from "./links";
 import { RelationsCollapsible } from "./relations";
@@ -83,6 +84,7 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
       )}
       {issueServiceType === EIssueServiceType.ISSUES && (
         <>
+          <GithubIssueLinkChip workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
           <GithubPullRequestsCollapsible workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
           <GithubCommitsCollapsible workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
         </>

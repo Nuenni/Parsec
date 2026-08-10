@@ -46,6 +46,15 @@ QUOTE_SPLIT_RE = re.compile(
 )
 
 
+def _quote_mailbox(name):
+    """imaplib.select() does not quote the mailbox name itself, so folder names with
+    spaces or special characters (e.g. Fastmail's "[06] PayGlue/Support") break the
+    IMAP command unless wrapped as an IMAP quoted-string ourselves.
+    """
+    escaped = name.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
 def _decode_mime_header(value):
     if not value:
         return ""
@@ -252,7 +261,7 @@ def test_imap_connection(host, port, username, password, use_ssl, folder="INBOX"
         )
         try:
             connection.login(username, password)
-            typ, _ = connection.select(folder or "INBOX")
+            typ, _ = connection.select(_quote_mailbox(folder or "INBOX"))
             if typ != "OK":
                 return f"Mailbox '{folder}' not found - check the folder name (case-sensitive)"
         finally:
@@ -325,7 +334,7 @@ def _poll_single_inbox(config):
     connection = imaplib.IMAP4_SSL(config.imap_host, config.imap_port) if config.imap_use_ssl else imaplib.IMAP4(config.imap_host, config.imap_port)
     try:
         connection.login(config.imap_username, decrypt_data(config.imap_password))
-        connection.select(config.imap_folder or "INBOX")
+        connection.select(_quote_mailbox(config.imap_folder or "INBOX"))
         _, message_numbers = connection.search(None, "UNSEEN")
         for num in message_numbers[0].split():
             _, msg_data = connection.fetch(num, "(RFC822)")

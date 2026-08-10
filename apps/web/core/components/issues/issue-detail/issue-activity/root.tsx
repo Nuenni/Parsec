@@ -89,7 +89,7 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
     workspaceSlug && projectId && issueId ? `ISSUE_GITHUB_SYNC_STATUS_${issueId}` : null,
     () => issueGithubSyncStatusService.fetchSyncStatus(workspaceSlug, projectId, issueId)
   );
-  const showAccessSpecifier = !!project?.anchor || !!emailLink || !!githubSynced;
+  const showAccessSpecifier = !!project?.anchor || !!emailLink || !!githubSynced?.synced;
   const renderCommentCreationBox = useMemo(
     () => (
       <CommentCreate
