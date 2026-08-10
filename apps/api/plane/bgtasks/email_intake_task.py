@@ -11,6 +11,7 @@ from email.header import decode_header
 from email.utils import parseaddr
 
 # Django imports
+from bs4 import BeautifulSoup
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -58,6 +59,19 @@ def _decode_mime_header(value):
     return decoded
 
 
+def _html_to_text(html):
+    """Renders HTML email bodies down to readable plain text - unlike Django's
+    strip_tags(), this actually drops <style>/<script>/<head> element content instead
+    of leaving CSS/JS text behind, and collapses the layout whitespace HTML emails
+    are typically full of.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["style", "script", "head", "title"]):
+        tag.decompose()
+    lines = [line.strip() for line in soup.get_text(separator="\n").splitlines()]
+    return "\n\n".join(line for line in lines if line)
+
+
 def _extract_plain_text_body(msg):
     if msg.is_multipart():
         text_part = None
@@ -76,12 +90,12 @@ def _extract_plain_text_body(msg):
         payload = chosen.get_payload(decode=True) or b""
         charset = chosen.get_content_charset() or "utf-8"
         body = payload.decode(charset, errors="replace")
-        return strip_tags(body) if chosen is html_part else body
+        return _html_to_text(body) if chosen is html_part else body
     else:
         payload = msg.get_payload(decode=True) or b""
         charset = msg.get_content_charset() or "utf-8"
         body = payload.decode(charset, errors="replace")
-        return strip_tags(body) if msg.get_content_type() == "text/html" else body
+        return _html_to_text(body) if msg.get_content_type() == "text/html" else body
 
 
 def _strip_quoted_reply(body):
@@ -230,7 +244,7 @@ def _find_link_by_message_ids(project_id, thread_ids):
     return None
 
 
-def test_imap_connection(host, port, username, password, use_ssl):
+def test_imap_connection(host, port, username, password, use_ssl, folder="INBOX"):
     """Returns None on success, or an error message string."""
     try:
         connection = (
@@ -238,7 +252,9 @@ def test_imap_connection(host, port, username, password, use_ssl):
         )
         try:
             connection.login(username, password)
-            connection.select("INBOX")
+            typ, _ = connection.select(folder or "INBOX")
+            if typ != "OK":
+                return f"Mailbox '{folder}' not found - check the folder name (case-sensitive)"
         finally:
             connection.logout()
         return None
@@ -278,7 +294,7 @@ def _poll_single_inbox(config):
     connection = imaplib.IMAP4_SSL(config.imap_host, config.imap_port) if config.imap_use_ssl else imaplib.IMAP4(config.imap_host, config.imap_port)
     try:
         connection.login(config.imap_username, decrypt_data(config.imap_password))
-        connection.select("INBOX")
+        connection.select(config.imap_folder or "INBOX")
         _, message_numbers = connection.search(None, "UNSEEN")
         for num in message_numbers[0].split():
             _, msg_data = connection.fetch(num, "(RFC822)")

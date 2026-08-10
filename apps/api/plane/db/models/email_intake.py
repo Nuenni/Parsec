@@ -23,6 +23,11 @@ class EmailIntakeConfig(ProjectBaseModel):
     imap_username = models.CharField(max_length=255)
     imap_password = models.TextField(blank=True)
     imap_use_ssl = models.BooleanField(default=True)
+    # IMAP mailbox/folder to poll. Defaults to INBOX, but a mailbox shared via an alias
+    # (e.g. a Fastmail alias landing in the same inbox as personal mail) needs a
+    # dedicated folder - set up a server-side filter rule to move alias mail there,
+    # then point this at that folder name.
+    imap_folder = models.CharField(max_length=255, default="INBOX")
     smtp_host = models.CharField(max_length=255)
     smtp_port = models.PositiveIntegerField(default=587)
     smtp_username = models.CharField(max_length=255)

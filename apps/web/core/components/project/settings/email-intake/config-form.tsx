@@ -29,6 +29,7 @@ const emptyForm: TEmailIntakeConfigCreate = {
   imap_username: "",
   imap_password: "",
   imap_use_ssl: true,
+  imap_folder: "INBOX",
   smtp_host: "",
   smtp_port: 587,
   smtp_username: "",
@@ -55,6 +56,7 @@ export function EmailIntakeConfigForm(props: Props) {
           imap_username: initialValue.imap_username,
           imap_password: "",
           imap_use_ssl: initialValue.imap_use_ssl,
+          imap_folder: initialValue.imap_folder,
           smtp_host: initialValue.smtp_host,
           smtp_port: initialValue.smtp_port,
           smtp_username: initialValue.smtp_username,
@@ -152,6 +154,23 @@ export function EmailIntakeConfigForm(props: Props) {
             placeholder={initialValue ? "•••• (leave blank to keep current)" : "Password"}
             className="px-3 py-2"
           />
+        </div>
+        <div className="mt-3 flex flex-col gap-1">
+          <label htmlFor="email-intake-imap-folder" className="text-11 text-tertiary">
+            Folder to poll
+          </label>
+          <Input
+            id="email-intake-imap-folder"
+            value={form.imap_folder}
+            onChange={(event) => update("imap_folder", event.target.value)}
+            placeholder="INBOX"
+            className="px-3 py-2"
+          />
+          <p className="text-11 text-tertiary">
+            Defaults to INBOX. If this mailbox is a shared alias (e.g. a Fastmail alias landing in your personal inbox),
+            set up a server-side rule to move mail for that alias into a dedicated folder and enter that folder name
+            here.
+          </p>
         </div>
       </div>
 

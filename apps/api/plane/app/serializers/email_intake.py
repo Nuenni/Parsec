@@ -30,6 +30,7 @@ class EmailIntakeConfigSerializer(BaseSerializer):
             "imap_password",
             "imap_password_set",
             "imap_use_ssl",
+            "imap_folder",
             "smtp_host",
             "smtp_port",
             "smtp_username",

@@ -13,6 +13,7 @@ export type TEmailIntakeConfig = {
   imap_username: string;
   imap_password_set: boolean;
   imap_use_ssl: boolean;
+  imap_folder: string;
   smtp_host: string;
   smtp_port: number;
   smtp_username: string;
@@ -35,6 +36,7 @@ export type TEmailIntakeConfigCreate = {
   imap_username: string;
   imap_password: string;
   imap_use_ssl?: boolean;
+  imap_folder?: string;
   smtp_host: string;
   smtp_port?: number;
   smtp_username: string;

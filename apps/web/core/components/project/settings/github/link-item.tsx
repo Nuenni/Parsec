@@ -10,7 +10,33 @@ import { CopyIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TGithubProjectLink } from "@plane/types";
 import { ToggleSwitch, Tooltip } from "@plane/ui";
-import { copyTextToClipboard } from "@plane/utils";
+import { calculateTimeAgo, copyTextToClipboard } from "@plane/utils";
+
+// Consider the connection "healthy" if a webhook delivery was received recently -
+// GitHub retries failed deliveries and re-pings on save, so a long silence usually
+// means the webhook was never added (or was removed) on the GitHub side.
+const HEALTHY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function getConnectionHealth(lastWebhookReceivedAt: string | null) {
+  if (!lastWebhookReceivedAt) {
+    return {
+      color: "bg-danger-solid",
+      label:
+        "Not connected yet - no webhook delivery received. Add the webhook URL below in the GitHub repo's Settings > Webhooks.",
+    };
+  }
+  const isRecent = Date.now() - new Date(lastWebhookReceivedAt).getTime() < HEALTHY_WINDOW_MS;
+  if (isRecent) {
+    return {
+      color: "bg-success-solid",
+      label: `Connected - last event received ${calculateTimeAgo(lastWebhookReceivedAt)}`,
+    };
+  }
+  return {
+    color: "bg-warning-solid",
+    label: `No recent activity - last event received ${calculateTimeAgo(lastWebhookReceivedAt)}`,
+  };
+}
 
 type Props = {
   link: TGithubProjectLink;
@@ -29,11 +55,16 @@ export function GithubProjectLinkItem(props: Props) {
     );
   };
 
+  const health = getConnectionHealth(link.last_webhook_received_at);
+
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-subtle bg-layer-2 p-4">
       <div className="flex items-center justify-between gap-4">
         <h5 className="truncate text-body-sm-medium">{link.repository_full_name}</h5>
         <div className="flex items-center gap-3">
+          <Tooltip tooltipContent={health.label}>
+            <span className={`size-2 flex-shrink-0 rounded-full ${health.color}`} />
+          </Tooltip>
           <span className="text-11 text-tertiary">Active</span>
           <ToggleSwitch value={link.is_active} onChange={onToggleActive} />
           <Tooltip tooltipContent="Remove this repository link">

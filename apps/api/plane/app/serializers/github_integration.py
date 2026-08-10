@@ -65,9 +65,17 @@ class GithubProjectLinkSerializer(BaseSerializer):
             "is_active",
             "webhook_secret",
             "webhook_url",
+            "last_webhook_received_at",
             "created_at",
         ]
-        read_only_fields = ["id", "project", "webhook_secret", "webhook_url", "created_at"]
+        read_only_fields = [
+            "id",
+            "project",
+            "webhook_secret",
+            "webhook_url",
+            "last_webhook_received_at",
+            "created_at",
+        ]
 
     def get_webhook_url(self, obj):
         request = self.context.get("request")

@@ -24,6 +24,10 @@ class GithubProjectLink(ProjectBaseModel):
     # False = PR status linking only, True = full bidirectional issue sync
     sync_issues = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    # Timestamp of the last successfully signature-verified webhook delivery from GitHub.
+    # Drives the connection health indicator in the settings UI - null means no delivery
+    # has ever been received (webhook likely not added on the GitHub side yet).
+    last_webhook_received_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Github Project Link"

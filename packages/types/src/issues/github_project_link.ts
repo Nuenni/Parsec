@@ -12,6 +12,7 @@ export type TGithubProjectLink = {
   is_active: boolean;
   webhook_secret: string;
   webhook_url: string;
+  last_webhook_received_at: string | null;
   created_at: string;
 };
 

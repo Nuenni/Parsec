@@ -7,6 +7,7 @@ import hashlib
 import hmac
 
 # Django imports
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -49,6 +50,9 @@ class GithubWebhookEndpoint(BaseAPIView):
         signature = request.headers.get("X-Hub-Signature-256")
         if not _verify_github_signature(link.webhook_secret, request.body, signature):
             return Response({"error": "Invalid signature"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        link.last_webhook_received_at = timezone.now()
+        link.save(update_fields=["last_webhook_received_at"])
 
         event = request.headers.get("X-GitHub-Event")
         payload = request.data

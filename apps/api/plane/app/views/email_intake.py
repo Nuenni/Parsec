@@ -38,6 +38,7 @@ class EmailIntakeConfigViewSet(BaseViewSet):
             data.get("imap_username"),
             data.get("imap_password"),
             data.get("imap_use_ssl", True),
+            data.get("imap_folder", "INBOX"),
         )
         if imap_error:
             return Response({"imap_password": f"Could not connect to IMAP: {imap_error}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -64,7 +65,7 @@ class EmailIntakeConfigViewSet(BaseViewSet):
 
         connection_fields_touched = any(
             field in data
-            for field in ["imap_host", "imap_port", "imap_username", "imap_password", "imap_use_ssl"]
+            for field in ["imap_host", "imap_port", "imap_username", "imap_password", "imap_use_ssl", "imap_folder"]
         )
         if connection_fields_touched:
             imap_password = data.get("imap_password") or decrypt_data(instance.imap_password)
@@ -74,6 +75,7 @@ class EmailIntakeConfigViewSet(BaseViewSet):
                 data.get("imap_username", instance.imap_username),
                 imap_password,
                 data.get("imap_use_ssl", instance.imap_use_ssl),
+                data.get("imap_folder", instance.imap_folder),
             )
             if imap_error:
                 return Response(
