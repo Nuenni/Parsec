@@ -9,6 +9,7 @@ from plane.app.views import (
     IssueGithubPullRequestsEndpoint,
     IssueGithubCommitsEndpoint,
     GithubProjectLinkViewSet,
+    IssueGithubSyncStatusEndpoint,
 )
 
 urlpatterns = [
@@ -31,6 +32,11 @@ urlpatterns = [
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/github-commits/",
         IssueGithubCommitsEndpoint.as_view(),
         name="issue-github-commits",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/github-sync-status/",
+        IssueGithubSyncStatusEndpoint.as_view(),
+        name="issue-github-sync-status",
     ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/github-links/",

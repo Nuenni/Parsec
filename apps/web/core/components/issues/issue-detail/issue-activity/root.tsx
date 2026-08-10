@@ -22,6 +22,7 @@ import { CommentCreate } from "@/components/comments/comment-create";
 import { useProject } from "@/hooks/store/use-project";
 // services
 import { IssueEmailLinkService } from "@/services/issue/email_link.service";
+import { IssueGithubSyncStatusService } from "@/services/issue/github_sync_status.service";
 // local imports
 import { IssueActivityCommentRoot } from "./activity-comment-root";
 import { useWorkItemCommentOperations } from "./helper";
@@ -29,6 +30,7 @@ import { ActivitySortRoot } from "./sort-root";
 import { ActivityFilterRoot } from "./filter-root";
 
 const issueEmailLinkService = new IssueEmailLinkService();
+const issueGithubSyncStatusService = new IssueGithubSyncStatusService();
 
 type TIssueActivity = {
   workspaceSlug: string;
@@ -83,7 +85,11 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
   const { data: emailLink } = useSWR(workspaceSlug && projectId && issueId ? `ISSUE_EMAIL_LINK_${issueId}` : null, () =>
     issueEmailLinkService.fetchEmailLink(workspaceSlug, projectId, issueId)
   );
-  const showAccessSpecifier = !!project?.anchor || !!emailLink;
+  const { data: githubSynced } = useSWR(
+    workspaceSlug && projectId && issueId ? `ISSUE_GITHUB_SYNC_STATUS_${issueId}` : null,
+    () => issueGithubSyncStatusService.fetchSyncStatus(workspaceSlug, projectId, issueId)
+  );
+  const showAccessSpecifier = !!project?.anchor || !!emailLink || !!githubSynced;
   const renderCommentCreationBox = useMemo(
     () => (
       <CommentCreate

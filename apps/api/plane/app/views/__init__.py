@@ -243,4 +243,5 @@ from .github.base import GithubWebhookEndpoint
 from .github.pull_request import IssueGithubPullRequestsEndpoint
 from .github.commit import IssueGithubCommitsEndpoint
 from .github.project_link import GithubProjectLinkViewSet
+from .github.sync_status import IssueGithubSyncStatusEndpoint
 from .email_intake import EmailIntakeConfigViewSet, IssueEmailLinkEndpoint

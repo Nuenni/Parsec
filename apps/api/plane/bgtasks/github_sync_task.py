@@ -438,8 +438,8 @@ def _github_api_request(method, path, **kwargs):
     return response
 
 
-@shared_task
-def sync_comment_to_github(comment_id):
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+def sync_comment_to_github(self, comment_id):
     try:
         from plane.utils.html_processor import strip_tags
 
@@ -447,7 +447,13 @@ def sync_comment_to_github(comment_id):
         if comment is None:
             return
         issue = comment.issue
-        if issue.external_source != "github" or comment.actor_id == _github_bot_user_id():
+        # Only comments explicitly marked "external" are posted to a (likely public)
+        # GitHub repo - mirrors the same access-gated behavior as email sync.
+        if (
+            issue.external_source != "github"
+            or comment.actor_id == _github_bot_user_id()
+            or comment.access != "EXTERNAL"
+        ):
             return
 
         repository_full_name, _, number = issue.external_id.rpartition("#")
@@ -460,10 +466,11 @@ def sync_comment_to_github(comment_id):
         )
     except Exception as e:
         log_exception(e)
+        raise
 
 
-@shared_task
-def sync_issue_state_to_github(issue_id, is_closed):
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+def sync_issue_state_to_github(self, issue_id, is_closed):
     try:
         issue = Issue.objects.select_related("state").filter(pk=issue_id).first()
         if issue is None or issue.external_source != "github" or issue.updated_by_id == _github_bot_user_id():
@@ -476,10 +483,11 @@ def sync_issue_state_to_github(issue_id, is_closed):
         )
     except Exception as e:
         log_exception(e)
+        raise
 
 
-@shared_task
-def sync_issue_labels_to_github(issue_id):
+@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+def sync_issue_labels_to_github(self, issue_id):
     try:
         issue = Issue.objects.filter(pk=issue_id).first()
         if issue is None or issue.external_source != "github" or issue.updated_by_id == _github_bot_user_id():
@@ -495,3 +503,4 @@ def sync_issue_labels_to_github(issue_id):
         )
     except Exception as e:
         log_exception(e)
+        raise
