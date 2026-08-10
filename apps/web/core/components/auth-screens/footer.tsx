@@ -12,7 +12,7 @@ export function AuthFooter() {
       <span className="text-13 whitespace-nowrap text-tertiary">
         Forked from{" "}
         <a
-          href="https://github.com/makeplane/plane"
+          href="https://github.com/Nuenni/Parsec"
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-secondary"
