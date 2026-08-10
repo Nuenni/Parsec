@@ -98,6 +98,12 @@ export function GithubProjectLinkItem(props: Props) {
             <CopyIcon className="size-3 text-tertiary" />
           </button>
         </div>
+        <p className="text-11 text-tertiary">
+          On GitHub&apos;s "Add webhook" page: set <strong>Content type</strong> to{" "}
+          <code className="text-tertiary">application/json</code> (not form-urlencoded, or deliveries won&apos;t parse),
+          paste the secret below into the <strong>Secret</strong> field, and for events either pick "Send me everything"
+          or select Issues, Issue comments, Pull requests, Pull request reviews, and Pushes individually.
+        </p>
       </div>
 
       <div className="flex flex-col gap-1.5">
