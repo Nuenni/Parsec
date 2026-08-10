@@ -31,6 +31,16 @@ class GithubProjectLinkViewSet(BaseViewSet):
         )
 
     @allow_permission([ROLE.ADMIN])
+    def list(self, request, *args, **kwargs):
+        # webhook_secret is returned in full below - restrict to admins, mirroring
+        # the pre-existing Webhook feature's admin-only visibility of its secret.
+        return super().list(request, *args, **kwargs)
+
+    @allow_permission([ROLE.ADMIN])
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @allow_permission([ROLE.ADMIN])
     def create(self, request, slug, project_id):
         try:
             serializer = GithubProjectLinkSerializer(
