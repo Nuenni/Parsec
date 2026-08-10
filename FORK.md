@@ -45,6 +45,25 @@ distributed via the repository:
 Cadence for upstream merges: immediately for security updates, otherwise
 occasionally as needed.
 
+## Links to Plane infrastructure
+
+Links to Plane's own documentation (docs.plane.so) stay in the UI - it
+largely describes the product we actually run, we have no documentation of
+our own, and removing the links would make the instance worse without
+anyone gaining anything. Removed instead: every contact channel (support,
+forum, bug report, status page, social) and product/marketing links, since
+those pointed users at a company we have no relationship with.
+
+## Terms of Service / Privacy Policy notice in the Space app
+
+The upstream notice linking to Plane's Terms of Service and Privacy Policy
+was removed from Space's sign-in/sign-up screen - it named a third-party
+company as the party whose terms users were agreeing to. A replacement
+isn't necessary as long as external sign-up stays disabled; if it's ever
+turned on, this needs to be reassessed. The email support intake isn't
+affected by this - that processing is already covered by the existing
+privacy policy and the Hetzner data-processing agreement.
+
 ## Deployment notes
 
 `web` and `admin` are served by the nginx config under
@@ -52,10 +71,12 @@ occasionally as needed.
 `port_in_redirect off;` - behind Traefik terminating TLS, nginx's own
 directory-redirect (`/some-path` -> `/some-path/`) otherwise builds an
 absolute `Location` from its own `$scheme`/listen port, leaking an internal
-`http://host:3000/...` URL to clients instead of a relative path.
+`http://host:3000/...` URL to clients instead of a relative path. Both
+files were a 0-diff match against upstream before this change.
 
 `space` does **not** use nginx in production - its Docker image runs
 `react-router-serve` directly (see `Dockerfile.space`'s final stage).
 `apps/space/nginx/nginx.conf` still exists in the repo (unmodified from
 upstream) but isn't part of the deployed image; don't assume a change there
-takes effect.
+takes effect. This matters for any future nginx change too: it only ever
+needs to touch `web` and `admin`.
