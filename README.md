@@ -1,30 +1,45 @@
-# Parsec
+<p align="center">
+  <img src=".github/assets/logo.svg" alt="Parsec" width="120" />
+</p>
 
-Selbstgehostetes Projekt- und Ticket-Management für interne Nutzung.
+<h1 align="center">Parsec</h1>
 
-Parsec ist ein Fork von [Plane](https://github.com/makeplane/plane) und
-steht wie das Original unter der **AGPL-3.0-only**. Details zu unseren
-Änderungen und zur Lizenz: siehe [FORK.md](./FORK.md).
+<p align="center"><b>Self-hosted project & ticket management, running our own way.</b></p>
 
-## Was anders ist als bei Plane
+<p align="center">
+  <a href="LICENSE.txt"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0"></a>
+  <img src="https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white" alt="Python 3.12+">
+  <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react&logoColor=white" alt="React 18">
+  <a href="https://github.com/makeplane/plane"><img src="https://img.shields.io/badge/fork%20of-Plane-6366f1" alt="Fork of Plane"></a>
+</p>
 
-- Eigenständige GitHub-Integration: bidirektionaler Sync von Issues,
-  Kommentaren und Labels, PR-Status-Verknüpfung, Sync der GitHub Issue
-  Fields (Priority, Effort), Auth über eine eigene GitHub App
-- Support-Ticket-Intake per E-Mail (IMAP-Polling, Antworten per SMTP)
-- Verschachtelte Pages und Page-Labels im Frontend
-- Kommentar-Threading
-- Deployment für Coolify + Traefik
+---
+
+## What this is
+
+Parsec is a fork of [Plane](https://github.com/makeplane/plane), an
+open-source project management tool, licensed under **AGPL-3.0-only**.
+It runs our internal work for NAFDO/PayGlue projects, not as a public
+product. Details on what we changed and why: [FORK.md](./FORK.md).
+
+## What's different from Plane
+
+- A from-scratch GitHub integration: bidirectional sync of issues,
+  comments and labels, PR status linking, sync of GitHub Issue Fields
+  (Priority, Effort), auth via our own GitHub App
+- Support-ticket intake by email (IMAP polling, replies over SMTP)
+- Nested pages and page labels in the frontend
+- Comment threading
+- Deployment adapted for Coolify + Traefik
 
 ## Setup
 
-Für Installation und Betrieb gilt im Wesentlichen die
-[Dokumentation von Plane](https://developers.plane.so/self-hosting/overview)
-— abweichend sind bei uns nur die Deployment-Anpassungen für Coolify und
-Traefik.
+Installation and operation follow Plane's own
+[self-hosting documentation](https://developers.plane.so/self-hosting/overview)
+almost exactly — the only real deviation is our Coolify/Traefik deployment
+setup instead of Plane's bundled Caddy proxy.
 
-## Lizenz und Herkunft
+## License and origin
 
-AGPL-3.0-only. "Plane" ist eine Marke von Plane Software, Inc. Dieses
-Projekt steht in keiner Verbindung zu Plane Software, Inc. und wird von
-dort nicht unterstützt.
+AGPL-3.0-only. "Plane" is a trademark of Plane Software, Inc. This project
+is not affiliated with, and is not endorsed by, Plane Software, Inc.

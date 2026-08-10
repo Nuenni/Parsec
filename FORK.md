@@ -1,48 +1,46 @@
 # Parsec
 
-Parsec ist ein Fork von [Plane](https://github.com/makeplane/plane),
-lizenziert unter AGPL-3.0-only.
+Parsec is a fork of [Plane](https://github.com/makeplane/plane), licensed
+under AGPL-3.0-only.
 
-Modifiziert seit August 2026 durch nafdo. Wesentliche Änderungen:
+Modified since August 2026 by nafdo. Notable changes:
 
-- Rebranding von "Plane" auf "Parsec" über Web-, Admin- und Space-App sowie
-  transaktionale E-Mails
-- GitHub-Integration von Grund auf neu gebaut: bidirektionaler Issue-/
-  Kommentar-/Label-Sync, PR-Status-Verknüpfung, Sync der GitHub Issue Fields
-  (Priority, Effort), Auth über eine eigene GitHub App statt Personal Access
-  Token
-- E-Mail-Support-Postfach: eingehende Anfragen per IMAP-Polling, Antworten
-  per SMTP
-- Frontend für bereits im Backend vorhandene Page-Verschachtelung und
-  Page-Labels ergänzt; Kommentar-Threading (Antworten) im Frontend ergänzt
-- Deployment-Anpassungen für Coolify + Traefik als Self-Hosting-Umgebung
-- Diverse Bugfixes (u. a. S3-Storage, Page-Nesting-API, Avatar-Icons in
-  Benachrichtigungs-Mails)
+- Rebranding from "Plane" to "Parsec" across the web, admin, and space
+  apps, as well as transactional emails
+- GitHub integration built from scratch: bidirectional issue/comment/label
+  sync, PR status linking, sync of GitHub Issue Fields (Priority, Effort),
+  auth via our own GitHub App instead of a personal access token
+- Email support inbox: inbound requests via IMAP polling, replies over SMTP
+- Frontend added for page nesting and page labels that already existed in
+  the backend; comment threading (replies) added in the frontend
+- Deployment adapted for Coolify + Traefik as the self-hosting environment
+- Various bugfixes (among others: S3 storage, the page-nesting API, avatar
+  icons in notification emails)
 
-Der vollständige Quellcode der laufenden Instanz liegt in diesem Repository.
+The complete source code of the running instance lives in this repository.
 
-"Plane" ist eine Marke von Plane Software, Inc. Dieses Projekt steht in
-keiner Verbindung zu Plane Software, Inc. und wird von dort nicht
-unterstützt. Name und Logo "Parsec" sind nicht Teil der AGPL-Lizenzierung.
+"Plane" is a trademark of Plane Software, Inc. This project is not
+affiliated with, and is not endorsed by, Plane Software, Inc. The name and
+logo "Parsec" are not part of the AGPL licensing.
 
-## Arbeiten mit Upstream
+## Working with upstream
 
-Upstream-Updates werden **gemerged, nicht gerebased** — Rebase schreibt
-unsere Historie neu und macht `rerere` wertlos.
+Upstream updates are **merged, not rebased** — rebasing rewrites our
+history and makes `rerere` worthless.
 
-Nach dem Klonen einmal setzen:
+Set this once after cloning:
 
     git config rerere.enabled true
 
-Git merkt sich damit gelöste Merge-Konflikte und wendet dieselbe Lösung
-beim nächsten Upstream-Merge automatisch an. Die Einstellung ist lokal und
-lässt sich nicht über das Repository verteilen.
+Git then remembers resolved merge conflicts and reapplies the same
+resolution automatically on the next upstream merge. This setting is local
+and can't be distributed via the repository.
 
-Für binäre Brand-Dateien und `README.md` gilt zusätzlich `merge=ours` (siehe
-`.gitattributes`) — das erfordert ebenfalls eine lokale, nicht über das
-Repository verteilbare Einstellung:
+Binary brand files and `README.md` additionally use `merge=ours` (see
+`.gitattributes`) — this also requires a local setting that can't be
+distributed via the repository:
 
     git config merge.ours.driver true
 
-Rhythmus für Upstream-Merges: bei Sicherheitsupdates sofort, sonst
-gelegentlich nach Bedarf.
+Cadence for upstream merges: immediately for security updates, otherwise
+occasionally as needed.
