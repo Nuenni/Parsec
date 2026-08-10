@@ -23,6 +23,13 @@ The complete source code of the running instance lives in this repository.
 affiliated with, and is not endorsed by, Plane Software, Inc. The name and
 logo "Parsec" are not part of the AGPL licensing.
 
+### About the name
+
+A parsec is the distance at which one astronomical unit subtends an angle
+of one arcsecond — you measure an angle and get a distance. That idea is
+also what the logo is built on: an observer point, a measured arc, and the
+angle mark that closes it.
+
 ## Working with upstream
 
 Upstream updates are **merged, not rebased** — rebasing rewrites our
