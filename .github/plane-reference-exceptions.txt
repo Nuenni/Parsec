@@ -1,0 +1,60 @@
+# Exceptions for .github/scripts/check-plane-references.mjs
+#
+# Format: "path:<regex>  # reason"  or  "line:<regex>  # reason"
+# - path: matched against the repo-relative file path (POSIX slashes). A
+#   matching file is skipped entirely.
+# - line: matched against a single matched line's raw text. A matching line
+#   is skipped, everything else in that file still gets scanned.
+#
+# Every entry here is a decision that a "plane" hit is fine to stay - not a
+# formality. Keep the reason specific enough that someone auditing this file
+# in a year understands WHY, not just what.
+
+# --- Our own package/import namespace, not Plane Software, Inc. ---
+line:@plane/                                                       # our own pnpm workspace package scope (@plane/ui, @plane/constants, ...), not the company
+line:from\s+plane\.|import\s+plane\.|\bplane\.(analytics|api|app|authentication|bgtasks|db|license|logs|middleware|seeds|settings|space|static|tests|throttles|utils|web|celery|urls|wsgi|asgi)\b|name\s*=\s*"plane\.|getLogger\("plane"\)   # the Django backend's own top-level Python package is literally named "plane", with these exact subpackages/modules (apps/api/plane/*) - renaming it is a rejected refactor (see audit), not a branding leftover. Deliberately an enumerated allow-list, not a wildcard like plane\.[a-z_]+, since that would also swallow real hits like "plane.so" or "plane.town"
+line:logging\.getLogger\("plane\.[a-z_]+"\)|"plane\.[a-z_]+":\s*\{     # Python logging namespace/config ("plane.worker", "plane.migrations", ...) - internal log-category names, scoped narrowly to logger syntax so it can't also swallow a real plane.so URL
+line:"plane"\s*:\s*\{|@plane/typescript-config|turbo\.json          # workspace/build-tooling package references
+line:X-Plane-(Delivery|Event|Signature)                             # outbound webhook HTTP header names (protocol-level, like GitHub's X-GitHub-Event) - renaming is a breaking API change for existing webhook consumers, a separate decision from a UI link cleanup
+line:\bplaneName\b                                                  # variable/prop name holding a plan-tier label ("Pro", "Business") - "plane" is a coincidental substring, unrelated to the company
+
+# --- License and copyright headers (every source file has one) ---
+line:^\s*\*?\s*Copyright \(c\) 2023-present Plane Software, Inc\.   # required AGPL notice, not a leftover - see FORK.md's modification notice
+
+# --- Test fixtures and seed data: not user-facing ---
+path:^apps/api/plane/tests/                                         # backend test fixtures (emails like user@plane.so, code comments referencing upstream issues)
+path:^apps/api/plane/seeds/                                         # demo/tutorial seed content shipped upstream, not our own text
+path:conftest\.py$|factories\.py$                                   # pytest fixtures
+
+# --- Telemetry / OTLP endpoints: infra config, not clickable UI ---
+path:^apps/api/plane/utils/otlp_endpoints\.py$                      # telemetry endpoint parsing, operator-facing config not user-facing UI
+line:telemetry\.plane\.so|telemetry\.plane\.town                    # telemetry endpoint defaults, same as above
+
+# --- OpenAPI schema metadata: developer-facing API docs, not app UI ---
+path:^apps/api/plane/settings/openapi\.py$                          # OpenAPI contact/license metadata for developers.plane.so-style API docs, not in-app UI
+path:^apps/api/plane/license/bgtasks/telemetry_metrics\.py$         # self-hosted telemetry metric key names (e.g. "plane.instance.type"), not user-facing UI - same category as otlp_endpoints.py
+
+# --- i18n example/placeholder text: shown as a hint, not a real value ---
+line:"domain_placeholder"|"domain_invalid"|"base_url_placeholder"   # example domain/URL shown as a form-field hint ("e.g. plane.so", "e.g. gh.plane.town"), not a real link or value
+line:"placeholder":\s*"https://plane\.so"|"placeholder":\s*"help@plane\.so"   # template.json's example placeholder text for a URL/email input, same category as domain_placeholder above
+
+# --- Developer tooling, not shipped app UI ---
+path:^packages/propel/\.storybook/                                  # Storybook config (brandUrl etc.) - only ever seen by developers running Storybook locally
+
+# --- Documentation links: kept intentionally, see FORK.md "Links to Plane infrastructure" ---
+line:docs\.plane\.so|developers\.plane\.so|go\.plane\.so/p-docs      # D1 decision: Plane's docs describe the product we run; we have none of our own
+
+# --- Code comments: not rendered, not clickable, can't be a UI leftover ---
+line:^\s*//|^\s*\*(?!/)|^\s*#(?!!)                                   # // and /* */ comments (JS/TS), # comments (Python) - source-code-only, never shown to a user
+
+# --- Links that already correctly point at our own fork ---
+line:github\.com/Nuenni/Parsec                                       # correct target - the word "Plane" may still appear as link text (e.g. the "forked from Plane" credit line) or in a neighboring comment
+
+# --- npm package manifests: metadata, not shipped UI ---
+path:(^|/)package\.json$                                             # "name"/"description" fields like "plane-api" or "Admin UI for Plane" - npm metadata, never rendered to a user
+
+# --- SEO/social meta tags: separate, already-known issue, not a clickable UI element ---
+line:property(=|:)\s*["']?(og|twitter):|name(=|:)\s*["']?twitter:    # both HTML attribute style (property="og:url") and JS meta-array style ({ property: "og:url", ... }) - not something a user can click; untranslated SEO tags are a distinct, already-flagged cleanup, not part of this guard's scope
+
+# --- Non-English i18n locales: translations of the same English source string ---
+path:^packages/i18n/src/locales/(?!en/)                              # every non-en locale mirrors the same ~150 English source strings 19x over; reviewing the en/ source is sufficient signal, translated copies add no new information
