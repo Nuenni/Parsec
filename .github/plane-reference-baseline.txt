@@ -12,80 +12,29 @@
 # in a report, not silently in this one.
 # Regenerated via: node .github/scripts/check-plane-references.mjs --write-baseline
 # Format: <file>\t<exact matched line, trimmed>
-apps/admin/app/(all)/(dashboard)/ai/page.tsx	description: "Configure your AI API credentials so Plane AI features are turned on for all your workspaces.",
-apps/admin/app/(all)/(dashboard)/authentication/gitea/form.tsx	<div className="pt-2 text-18 font-medium">Plane-provided details for Gitea</div>
-apps/admin/app/(all)/(dashboard)/authentication/gitea/form.tsx	<div className="pt-2.5 text-18 font-medium">Gitea-provided details for Plane</div>
-apps/admin/app/(all)/(dashboard)/authentication/gitea/page.tsx	description="Allow members to login or sign up to plane with their Gitea accounts."
-apps/admin/app/(all)/(dashboard)/authentication/github/form.tsx	<div className="pt-2 text-18 font-medium">Plane-provided details for GitHub</div>
-apps/admin/app/(all)/(dashboard)/authentication/github/form.tsx	<div className="pt-2.5 text-18 font-medium">GitHub-provided details for Plane</div>
-apps/admin/app/(all)/(dashboard)/authentication/github/page.tsx	description="Allow members to login or sign up to plane with their GitHub accounts."
-apps/admin/app/(all)/(dashboard)/authentication/gitlab/form.tsx	<div className="pt-2 text-18 font-medium">Plane-provided details for GitLab</div>
-apps/admin/app/(all)/(dashboard)/authentication/gitlab/form.tsx	<div className="pt-2.5 text-18 font-medium">GitLab-provided details for Plane</div>
-apps/admin/app/(all)/(dashboard)/authentication/gitlab/page.tsx	description="Allow members to login or sign up to plane with their GitLab accounts."
-apps/admin/app/(all)/(dashboard)/authentication/google/form.tsx	<div className="pt-2 text-18 font-medium">Plane-provided details for Google</div>
-apps/admin/app/(all)/(dashboard)/authentication/google/form.tsx	<div className="pt-2.5 text-18 font-medium">Google-provided details for Plane</div>
-apps/admin/app/(all)/(dashboard)/authentication/google/page.tsx	description="Allow members to login or sign up to plane with their Google
-apps/admin/app/(all)/(dashboard)/authentication/page.tsx	export const meta: Route.MetaFunction = () => [{ title: "Authentication Settings - Plane Web" }];
 apps/admin/app/(all)/(dashboard)/email/email-config-form.tsx	placeholder: "getitdone@projectplane.so",
 apps/admin/app/(all)/(dashboard)/email/email-config-form.tsx	placeholder: "no-reply@projectplane.so",
-apps/admin/app/(all)/(dashboard)/email/page.tsx	Plane can send useful emails to you and your users from your own instance without talking to the Internet.
-apps/admin/app/(all)/(dashboard)/general/form.tsx	<div className="text-13 leading-5 font-medium text-primary">Let Plane collect anonymous usage data</div>
-apps/admin/app/(all)/(dashboard)/general/form.tsx	No PII is collected.This anonymized data is used to understand how you use Plane and build new features
-apps/admin/app/(all)/(home)/page.tsx	{ name: "description", content: "Configure your Plane instance or sign in to the admin portal." },
-apps/admin/app/(all)/(home)/sign-in-form.tsx	heading="Manage your Plane instance"
-apps/admin/app/root.tsx	const APP_TITLE = "Plane | Simple, extensible, open-source project management tool.";
-apps/admin/components/common/new-user-popup.tsx	Instance setup done! Welcome to Plane instance portal. Start your journey with by creating your first
-apps/admin/components/common/new-user-popup.tsx	alt="Plane icon"
-apps/admin/components/instance/setup-form.tsx	Allow Plane to anonymously collect usage events.{" "}
-apps/admin/components/instance/setup-form.tsx	heading="Setup your Plane Instance"
-apps/admin/components/instance/setup-form.tsx	subHeading="Post setup you will be able to manage this Plane instance."
-apps/admin/hooks/oauth/core.tsx	"Log in or sign up for Plane using codes sent via email. You need to have set up SMTP to use this method.",
-apps/admin/hooks/oauth/core.tsx	description: "Allow members to log in or sign up for Plane with their GitHub accounts.",
-apps/admin/hooks/oauth/core.tsx	description: "Allow members to log in or sign up for Plane with their Google accounts.",
-apps/admin/hooks/oauth/core.tsx	description: "Allow members to log in or sign up to plane with their GitLab accounts.",
-apps/admin/hooks/oauth/core.tsx	description: "Allow members to log in or sign up to plane with their Gitea accounts.",
-apps/admin/hooks/use-sidebar-menu/core.ts	name: "Images in Plane",
-apps/api/plane/api/views/issue.py	"PQL and structured filters are not supported on this Plane edition. "
-apps/api/plane/api/views/issue.py	"a Plane edition that supports work item query filtering."
 apps/api/plane/app/urls/analytic.py	name="plane-analytics",
 apps/api/plane/app/views/workspace/home.py	if key not in ["quick_tutorial", "new_at_plane"]
 apps/api/plane/bgtasks/email_intake_task.py	"""Replaces Plane image blocks with cid-referenced <img> tags and returns the
-apps/api/plane/bgtasks/forgot_password_task.py	subject = "A new password to your Plane account has been requested"
 apps/api/plane/bgtasks/github_sync_task.py	Issue Fields. Priority maps directly to Plane's own priority field; Effort
-apps/api/plane/bgtasks/issue_activities_task.py	comment = "Plane has archived the issue"
-apps/api/plane/bgtasks/issue_activities_task.py	comment="Plane updated the state to ",
-apps/api/plane/bgtasks/magic_link_code_task.py	subject = f"Your unique Plane login code is {token}"
-apps/api/plane/bgtasks/project_add_user_email_task.py	subject = "You have been invited to a Plane project"
-apps/api/plane/bgtasks/project_invitation_task.py	subject = f"{user.first_name or user.display_name or user.email} invited you to join {project.name} on Plane"
-apps/api/plane/bgtasks/user_activation_email_task.py	subject = f"{user.first_name or user.display_name or user.email} has been activated on Plane"
-apps/api/plane/bgtasks/user_deactivation_email_task.py	subject = f"{user.first_name or user.display_name or user.email} has been deactivated on Plane"
-apps/api/plane/bgtasks/user_email_update_task.py	subject = "Plane email address successfully updated"
-apps/api/plane/bgtasks/workspace_invitation_task.py	subject = f"{user.first_name or user.display_name or user.email} has invited you to join them in {workspace.name} on Plane"  # noqa: E501
-apps/api/plane/bgtasks/workspace_seed_task.py	display_name="Plane",
 apps/api/plane/bgtasks/workspace_seed_task.py	email=f"bot_user_{workspace.id}@{urlparse(settings.WEB_URL or 'https://plane.so').hostname or 'plane.so'}",
-apps/api/plane/bgtasks/workspace_seed_task.py	first_name="Plane",
 apps/api/plane/celery.py	app = Celery("plane")
-apps/api/plane/db/management/commands/create_dummy_data.py	raise CommandError("User email is required and should have signed in plane")
-apps/api/plane/db/management/commands/test_email.py	subject = "Test email from Plane"
 apps/api/plane/db/models/api.py	return "plane_api_" + uuid4().hex
 apps/api/plane/db/models/github_integration.py	"""A GitHub commit (from a push event) matched to a Plane issue by its message."""
 apps/api/plane/db/models/github_integration.py	"""A GitHub pull request matched to a Plane issue by branch/title/body reference."""
 apps/api/plane/db/models/github_integration.py	"""Maps a GitHub repository to a Plane project for PR-linking and/or issue sync."""
 apps/api/plane/db/models/webhook.py	return "plane_wh_" + uuid4().hex
-apps/api/plane/db/models/workspace.py	NEW_AT_PLANE = "new_at_plane", "New at Plane"
-apps/api/plane/license/api/views/configuration.py	message = "This is a sample email notification sent from Plane application."
-apps/api/plane/license/api/views/configuration.py	subject = "Email Notification from Plane"
+apps/api/plane/db/models/workspace.py	NEW_AT_PLANE = "new_at_plane", "New at Parsec"
 apps/api/plane/license/management/commands/register_instance.py	"https://api.github.com/repos/makeplane/plane/releases/latest",
 apps/api/plane/license/management/commands/register_instance.py	edition=InstanceEdition.PLANE_COMMUNITY.value,
 apps/api/plane/license/management/commands/register_instance.py	instance.edition = InstanceEdition.PLANE_COMMUNITY.value
-apps/api/plane/license/management/commands/register_instance.py	instance_name="Plane Community Edition",
 apps/api/plane/license/migrations/0002_rename_version_instance_current_version_and_more.py	field=models.CharField(default="plane-ce", max_length=50),
 apps/api/plane/license/migrations/0003_alter_changelog_title_alter_changelog_version_and_more.py	field=models.CharField(default="plane-ce", max_length=255),
 apps/api/plane/license/migrations/0005_rename_product_instance_edition_and_more.py	field=models.CharField(default="PLANE_COMMUNITY", max_length=255),
 apps/api/plane/license/models/instance.py	PLANE_COMMUNITY = "PLANE_COMMUNITY"
 apps/api/plane/license/models/instance.py	edition = models.CharField(max_length=255, default=InstanceEdition.PLANE_COMMUNITY.value)
 apps/api/plane/license/utils/instance_value.py	"default": os.environ.get("EMAIL_FROM", "Team Plane <team@mailer.plane.so>"),
-apps/api/plane/settings/production.py	SCOUT_NAME = "Plane"
 apps/api/plane/settings/production.py	else os.path.join(BASE_DIR, "logs", "plane-error.log")  # noqa
 apps/api/plane/settings/production.py	os.path.join(BASE_DIR, "logs", "plane-debug.log")  # noqa
 apps/api/plane/urls.py	"""plane URL Configuration"""
@@ -98,9 +47,6 @@ apps/api/plane/utils/filters/filter_backend.py	at `plane/utils/filters/README.md
 apps/api/plane/wsgi.py	WSGI config for plane project.
 apps/api/run_tests.py	cmd.extend(["--cov=plane", "--cov-report=term", "--cov-report=html"])
 apps/api/run_tests.py	parser = argparse.ArgumentParser(description="Run Plane tests")
-apps/api/templates/admin/base_site.html	<h1 id="site-name">{% trans 'Plane Django Admin'  %} </h1>
-apps/api/templates/admin/base_site.html	{% block title %}{{ title }} | {% trans  'plane Admin' %} {% endblock %}
-apps/api/templates/base.html	<title>Hello plane!</title>
 apps/api/templates/emails/auth/forgot_password.html	<!--        PLANE RESET PASSWORD EMAIL         -->
 apps/api/templates/emails/auth/forgot_password.html	Parsec — forked from Plane, modified for our needs by NAFDO.
 apps/api/templates/emails/auth/magic_signin.html	<!--           PLANE LOGIN CODE EMAIL          -->
@@ -141,65 +87,24 @@ apps/live/tests/lib/pdf/pdf-rendering.test.ts	const portraitBuffer = await rende
 apps/live/tests/lib/pdf/pdf-rendering.test.ts	describe("renderPlaneDocToPdfBuffer", () => {
 apps/live/tests/lib/pdf/pdf-rendering.test.ts	import { renderPlaneDocToPdfBuffer } from "@/lib/pdf";
 apps/live/tsconfig.json	"@/plane-live/*": ["./src/ce/*"]
-apps/space/app/issues/[anchor]/layout.tsx	const DEFAULT_DESCRIPTION = "Made with Plane, an AI-powered work management platform with publishing capabilities.";
-apps/space/app/issues/[anchor]/layout.tsx	const DEFAULT_TITLE = "Plane";
-apps/space/app/root.tsx	const APP_DESCRIPTION = "Plane Publish is a customer feedback management tool built on top of plane.so";
-apps/space/app/root.tsx	const APP_TITLE = "Plane Publish | Make your Plane boards public with one-click";
-apps/space/components/account/auth-forms/auth-header.tsx	subHeader: "Sign up or log in to work with Plane work items and Pages.",
-apps/space/components/account/auth-forms/auth-header.tsx	subHeader: "Use plane to add your valuable inputs to features.",
-apps/space/components/instance/instance-failure-view.tsx	<img src={instanceImage} alt="Plane instance failure image" />
-apps/space/lib/instance-provider.tsx	<img src={patternBackground} className="h-full w-screen object-cover" alt="Plane background pattern" />
+apps/space/app/root.tsx	const APP_DESCRIPTION = "Parsec Publish is a customer feedback management tool built on top of plane.so";
 apps/space/lib/instance-provider.tsx	const patternBackground = resolvedTheme === "dark" ? PlaneBackgroundPatternDark : PlaneBackgroundPattern;
 apps/space/lib/instance-provider.tsx	import PlaneBackgroundPattern from "@/app/assets/auth/background-pattern.svg?url";
 apps/space/lib/instance-provider.tsx	import PlaneBackgroundPatternDark from "@/app/assets/auth/background-pattern-dark.svg?url";
-apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/intake/page.tsx	workspace: "Plane",
-apps/web/app/(all)/accounts/forgot-password/layout.tsx	export const meta: Route.MetaFunction = () => [{ title: "Forgot Password - Plane" }];
-apps/web/app/(all)/accounts/reset-password/layout.tsx	export const meta: Route.MetaFunction = () => [{ title: "Reset Password - Plane" }];
-apps/web/app/(all)/accounts/set-password/layout.tsx	export const meta: Route.MetaFunction = () => [{ title: "Set Password - Plane" }];
-apps/web/app/(all)/sign-up/layout.tsx	{ title: "Sign up - Plane" },
-apps/web/app/(all)/workspace-invitations/page.tsx	description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
-apps/web/app/layout.tsx	<meta name="application-name" content="Plane" />
-apps/web/app/layout.tsx	{ title: "Plane | Simple, extensible, open-source project management tool." },
-apps/web/app/root.tsx	<meta name="application-name" content="Plane" />
-apps/web/app/root.tsx	const APP_TITLE = "Plane | Simple, extensible, open-source project management tool.";
-apps/web/core/components/auth-screens/footer.tsx	Plane
 apps/web/core/components/auth-screens/header.tsx	text: "auth.common.new_to_plane",
-apps/web/core/components/common/activity/helper.tsx	customUserName: newValue === "archive" ? "Plane" : undefined,
-apps/web/core/components/common/activity/user.tsx	<span className="font-medium text-primary">{customUserName || "Plane"}</span>
-apps/web/core/components/core/page-title.tsx	document.title = title ?? "Plane | Simple, extensible, open-source project management tool.";
-apps/web/core/components/core/theme/download-config-button.tsx	link.download = `plane-theme-${Date.now()}.json`;
 apps/web/core/components/global/version-number.tsx	export function PlaneVersionNumber() {
 apps/web/core/components/home/home-dashboard-widgets.tsx	new_at_plane: {
 apps/web/core/components/home/home-dashboard-widgets.tsx	title: "home.new_at_plane.title",
 apps/web/core/components/inbox/sidebar/inbox-list-item.tsx	<Avatar src={getFileURL("")} name={"Plane"} size="md" showTooltip />
 apps/web/core/components/inbox/sidebar/inbox-list-item.tsx	{createdByDetails && createdByDetails.email?.includes("intake@plane.so") ? (
-apps/web/core/components/instance/maintenance-message.tsx	&#x1F6A7; Looks like Plane didn&apos;t start up correctly!
-apps/web/core/components/instance/not-ready-view.tsx	<h1 className="text-h2-semibold text-primary">Welcome to Plane</h1>
-apps/web/core/components/instance/not-ready-view.tsx	<img src={GradientLogo} className="h-24 w-40 object-contain" alt="Plane Logo" />
-apps/web/core/components/integration/single-integration-card.tsx	notInstalled: "Connect with GitHub with your Plane workspace to sync project work items.",
-apps/web/core/components/integration/single-integration-card.tsx	notInstalled: "Connect with Slack with your Plane workspace to sync project work items.",
-apps/web/core/components/issues/issue-detail/issue-activity/activity/actions/archived-at.tsx	customUserName={activity.new_value === "archive" ? "Plane" : undefined}
-apps/web/core/components/issues/issue-detail/issue-activity/activity/actions/helpers/issue-creator.tsx	<span className="font-medium text-primary">{customUserName || "Plane"}</span>
-apps/web/core/components/issues/peek-overview/properties.tsx	{createdByDetails?.display_name?.includes("-intake") ? "Plane" : createdByDetails?.display_name}
 apps/web/core/components/license/modal/upgrade-modal.tsx	PLANE_COMMUNITY_PRODUCTS,
 apps/web/core/components/license/modal/upgrade-modal.tsx	const product = PLANE_COMMUNITY_PRODUCTS[planVariant];
 apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.BUSINESS]}
 apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.ENTERPRISE]}
 apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.PRO]}
-apps/web/core/components/navigation/app-rail-hoc.tsx	icon: <PlaneNewIcon className="size-5" />,
 apps/web/core/components/navigation/tab-navigation-utils.ts	export const TAB_PREFS_KEY = "plane_tab_prefs";
-apps/web/core/components/onboarding/invite-members.tsx	Work in plane happens best with your team. Invite them now to use Plane to its potential.
-apps/web/core/components/onboarding/steps/profile/consent.tsx	<span className="text-13 text-tertiary">I agree to Plane marketing communications</span>
-apps/web/core/components/onboarding/steps/profile/root.tsx	<CommonOnboardingHeader title="Create your profile." description="This is how you will appear in Plane." />
-apps/web/core/components/onboarding/steps/role/root.tsx	<CommonOnboardingHeader title="What's your role?" description="Let's set up Plane for how you work." />
-apps/web/core/components/onboarding/steps/team/root.tsx	description="Work in plane happens best with your team. Invite them now to use Plane to its potential."
-apps/web/core/components/onboarding/steps/usecase/root.tsx	<CommonOnboardingHeader title="What brings you to Plane?" description="Tell us your goals and team size." />
-apps/web/core/components/onboarding/tour/root.tsx	"The work item is the building block of the Plane. Most concepts in Plane are either associated with work items and their properties.",
-apps/web/core/components/onboarding/tour/root.tsx	We{"'"}re glad that you decided to try out Plane. You can now manage your projects with ease. Get
-apps/web/core/components/onboarding/tour/sidebar.tsx	Get more out of Plane.
 apps/web/core/components/power-k/config/help-commands.ts	i18n_title: "power_k.help_actions.open_plane_documentation",
 apps/web/core/components/power-k/config/help-commands.ts	id: "open_plane_documentation",
-apps/web/core/components/profile/activity/activity-list.tsx	<span className="text-gray font-medium">Plane</span>
 apps/web/core/components/workspace/billing/comparison/base.tsx	const getSubscriptionType = (planKey: TPlanePlans) => planDetails[planKey].id;
 apps/web/core/components/workspace/billing/comparison/base.tsx	const { planDetails, planHighlights, planComparison } = PLANE_PLANS;
 apps/web/core/components/workspace/billing/comparison/base.tsx	const { planeDetails, isSelfManaged, isCompareAllFeaturesSectionOpen, setIsCompareAllFeaturesSectionOpen } = props;
@@ -241,14 +146,8 @@ apps/web/core/components/workspace/billing/comparison/root.tsx	import { PLANE_PL
 apps/web/core/components/workspace/billing/comparison/root.tsx	planeDetails={Object.entries(planDetails).map(([planKey, plan]) => {
 apps/web/core/components/workspace/sidebar/help-section/root.tsx	<PlaneVersionNumber />
 apps/web/core/components/workspace/sidebar/help-section/root.tsx	import { PlaneVersionNumber } from "@/components/global/version-number";
-apps/web/core/layouts/auth-layout/workspace-wrapper.tsx	<img src={WorkSpaceNotAvailable} className="h-[220px] object-contain object-center" alt="Plane logo" />
 apps/web/core/lib/stale-asset-error.ts	const STALE_ASSET_RELOAD_KEY = "__plane_chunk_reload";
 apps/web/core/store/user/base-permissions.store.ts	type ETempUserRole = TUserPermissions | EUserWorkspaceRoles | EUserProjectRoles; // TODO: Remove this once we have migrated user permissions to enums to plane constants package
-apps/web/manifest.json	"description": "Plane accelerated the software development by order of magnitude for agencies and product companies.",
-apps/web/manifest.json	"name": "Plane | Accelerate software development with peace.",
-apps/web/manifest.json	"short_name": "Plane",
-apps/web/public/manifest.json	"name": "Plane",
-apps/web/public/manifest.json	"short_name": "Plane",
 apps/web/public/site.webmanifest.json	{ "src": "/plane-logos/plane-mobile-pwa.png", "sizes": "192x192", "type": "image/png" },
 apps/web/public/site.webmanifest.json	{ "src": "/plane-logos/plane-mobile-pwa.png", "sizes": "512x512", "type": "image/png" }
 packages/constants/src/endpoints.ts	export const MARKETING_PRICING_PAGE_LINK = "https://plane.so/pricing";
