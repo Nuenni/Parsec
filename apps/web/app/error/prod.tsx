@@ -41,8 +41,8 @@ export function ProdErrorComponent({ onGoHome }: ProdErrorComponentProps) {
           <div className="flex flex-col gap-2.5">
             <h1 className="text-left text-18 font-semibold text-primary">&#x1F6A7; Looks like something went wrong!</h1>
             <span className="text-left text-14 font-medium text-secondary">
-              We track these errors automatically and are working on getting things back up and running. In the
-              meantime, try refreshing.
+              Something went wrong on this page. Try refreshing - if it keeps happening, your instance admin can check
+              the container logs.
             </span>
           </div>
 

@@ -24,7 +24,7 @@ import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 import { AppProvider } from "./provider";
 
 export const meta = () => [
-  { title: "Plane | Simple, extensible, open-source project management tool." },
+  { title: "Parsec | Simple, extensible, open-source project management tool." },
   { name: "description", content: SITE_DESCRIPTION },
   {
     name: "keywords",
@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/svg+xml" href={parsecMark} />
         <link rel="manifest" href="/site.webmanifest.json" />
         {/* Meta info for PWA */}
-        <meta name="application-name" content="Plane" />
+        <meta name="application-name" content="Parsec" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={SITE_NAME} />

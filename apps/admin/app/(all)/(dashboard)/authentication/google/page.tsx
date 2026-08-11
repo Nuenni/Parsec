@@ -55,9 +55,7 @@ const InstanceGoogleAuthenticationPage = observer(function InstanceGoogleAuthent
     });
 
     await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
+      .then(() => setIsSubmitting(false))
       .catch((err) => {
         console.error(err);
         setIsSubmitting(false);
@@ -68,7 +66,7 @@ const InstanceGoogleAuthenticationPage = observer(function InstanceGoogleAuthent
       customHeader={
         <AuthenticationMethodCard
           name="Google"
-          description="Allow members to login or sign up to plane with their Google
+          description="Allow members to login or sign up to parsec with their Google
             accounts."
           icon={<img src={GoogleLogo} height={24} width={24} alt="Google Logo" />}
           config={

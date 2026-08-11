@@ -1,0 +1,27 @@
+name: Plane Reference Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - "parsec-main"
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - ".github/scripts/check-plane-references.mjs"
+      - ".github/plane-reference-exceptions.txt"
+      - ".github/plane-reference-baseline.txt"
+
+jobs:
+  plane-reference-check:
+    name: Plane Reference Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+
+      - name: Check for new references to Plane's own infrastructure
+        run: node .github/scripts/check-plane-references.mjs

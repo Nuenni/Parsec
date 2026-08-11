@@ -81,9 +81,90 @@ absolute `Location` from its own `$scheme`/listen port, leaking an internal
 `http://host:3000/...` URL to clients instead of a relative path. Both
 files were a 0-diff match against upstream before this change.
 
+`EMAIL_FROM` **must** be configured (Admin -> Email settings, or the
+`EMAIL_FROM` env var) - upstream's own fallback if it's never set is
+`Team Plane <team@mailer.plane.so>`, a domain we don't control. That
+fallback would fail SPF/DKIM for our sending domain, so it wouldn't show
+up as "wrong sender," it would show up as "emails never arrive" - a much
+harder thing to debug. Verified live: our instance has it set correctly
+(`instance_configurations` table, key `EMAIL_FROM`), and every sender
+(bgtasks, the admin's "send test email" command, the API) resolves it
+through the same `get_email_configuration()` function, so one DB row
+covers all of them.
+
 `space` does **not** use nginx in production - its Docker image runs
 `react-router-serve` directly (see `Dockerfile.space`'s final stage).
 `apps/space/nginx/nginx.conf` still exists in the repo (unmodified from
 upstream) but isn't part of the deployed image; don't assume a change there
 takes effect. This matters for any future nginx change too: it only ever
 needs to touch `web` and `admin`.
+
+## CI guard against Plane-infrastructure references
+
+`.github/workflows/plane-reference-check.yml` runs
+`.github/scripts/check-plane-references.mjs` on every PR into
+`parsec-main`: a broad, case-insensitive search for the word stem
+"plane" across `apps/` and `packages/`, so a stray `plane.so` link or
+contact channel doesn't have to be hand-found by a future audit again.
+
+Two files filter its output, and they are not the same kind of list:
+
+- `plane-reference-exceptions.txt` is for references that are correct
+  and may stay **forever** - our own `@plane/*` package scope, the
+  Django backend's own `plane` Python package, license headers, the
+  docs links kept per the section above. An entry here is a decision,
+  made once.
+- `plane-reference-baseline.txt` is a **debt ledger**, not an
+  exceptions list - known, real, unfixed references (visible brand
+  text with no link, or links belonging to a larger deferred cleanup
+  like the paid-tier upsell UI). An entry here is an IOU. It should
+  shrink as that work happens, not grow as a place to dump whatever's
+  inconvenient to fix under time pressure.
+
+If a hit doesn't clearly belong in either file, it belongs in a report
+to whoever's reviewing the PR - not silently in the baseline.
+
+## Upsell and billing
+
+The workspace edition badge (sidebar) and the Active Cycles page's upgrade
+banner were removed entirely, not just de-linked - both had "Upgrade"
+buttons that opened real, working checkout pages at app.plane.so. On a
+self-hosted instance that's not a branding issue, it's a way for someone to
+pay Plane Software, Inc. real money for a license that unlocks nothing
+here.
+
+The billing comparison page (workspace settings -> Billing) still has the
+same kind of upgrade content, including its own working checkout button -
+left in place for now because it's only reachable by a workspace admin who
+actively navigates to Settings, and today that's a single person. This is
+a deliberate, temporary risk acceptance, not an oversight - revisit if that
+changes.
+
+## Working with automated find-and-replace across this codebase
+
+Any future pass that mechanically replaces "Plane" with "Parsec" (or
+similar) needs a human reviewing the diff before it's committed, not just
+before it's designed. A word-boundary-safe find-and-replace pass in this
+repo still corrupted, in one run: S3-hosted image URLs in email templates
+(real assets on Plane's infrastructure, not ours to rename), the "forked
+from Plane" AGPL attribution line (renaming it to "forked from Parsec"
+makes the required notice nonsensical), `tsconfig.json` path aliases
+(`@/plane-editor/*`) and every import statement using them, icon-registry
+lookup keys and file-path re-exports, a functional reserved-workspace-slug
+blocklist, Celery/Django internal process and URL names, and i18n JSON
+**keys** (not just values - a key rename breaks every `t("...")` call site
+that references it).
+
+The rule for next time: "Plane" is an identifier in many places in this
+codebase, not a brand name, and nothing distinguishes the two syntactically.
+Text replacement has to be manual, scoped to strings actually rendered to a
+user, one file at a time - never a blind pattern match across the tree.
+
+## `lint --fix` needs a diff review too
+
+`pnpm exec oxlint --fix` once rewrote working code while "fixing" an
+unrelated warning - it collapsed `await Promise.all([x])` into `[await x]`,
+which is not equivalent (no `Promise.all` semantics, the resolved value is
+discarded into an array). This had nothing to do with the lint rule that
+triggered it. Treat `--fix` output the same as any other code change: read
+the diff before staging, don't assume "the linter did it" means it's safe.

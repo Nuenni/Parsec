@@ -17,7 +17,7 @@ export function AuthFooter() {
           rel="noopener noreferrer"
           className="underline hover:text-secondary"
         >
-          Plane
+          Parsec
         </a>{" "}
         - modified for our needs by NAFDO.
       </span>

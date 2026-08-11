@@ -18,7 +18,8 @@ function ErrorPage() {
         <div className="space-y-2">
           <h3 className="text-16 font-semibold">Yikes! That doesn{"'"}t look good.</h3>
           <p className="mx-auto text-13 text-secondary md:w-1/2">
-            That crashed Plane, pun intended. No worries, though. Our engineers have been notified.
+            That crashed Parsec, pun intended. Try refreshing - if it keeps happening, your instance admin can check the
+            container logs.
           </p>
         </div>
         <div className="flex items-center justify-center gap-2">
