@@ -141,7 +141,6 @@ apps/live/tests/lib/pdf/pdf-rendering.test.ts	const portraitBuffer = await rende
 apps/live/tests/lib/pdf/pdf-rendering.test.ts	describe("renderPlaneDocToPdfBuffer", () => {
 apps/live/tests/lib/pdf/pdf-rendering.test.ts	import { renderPlaneDocToPdfBuffer } from "@/lib/pdf";
 apps/live/tsconfig.json	"@/plane-live/*": ["./src/ce/*"]
-apps/space/app/error.tsx	That crashed Plane, pun intended. No worries, though. Our engineers have been notified.
 apps/space/app/issues/[anchor]/layout.tsx	const DEFAULT_DESCRIPTION = "Made with Plane, an AI-powered work management platform with publishing capabilities.";
 apps/space/app/issues/[anchor]/layout.tsx	const DEFAULT_TITLE = "Plane";
 apps/space/app/root.tsx	const APP_DESCRIPTION = "Plane Publish is a customer feedback management tool built on top of plane.so";
