@@ -38,7 +38,17 @@ export const PageNavigationPaneInfoTabSubPagesInfo = observer(function PageNavig
   const { getPageById, getChildPageIds, createPage } = usePageStore(EPageStoreType.PROJECT);
   // derived values
   const projectId = page.project_ids?.[0];
-  const parentPage = page.parent ? getPageById(page.parent) : undefined;
+  const ancestorPages = (() => {
+    const chain: TPageInstance[] = [];
+    const visited = new Set<string>();
+    let current = page.parent ? getPageById(page.parent) : undefined;
+    while (current?.id && !visited.has(current.id)) {
+      visited.add(current.id);
+      chain.unshift(current);
+      current = current.parent ? getPageById(current.parent) : undefined;
+    }
+    return chain;
+  })();
   const childPageIds = page.id ? getChildPageIds(page.id) : [];
 
   const handleAddSubPage = async () => {
@@ -54,16 +64,22 @@ export const PageNavigationPaneInfoTabSubPagesInfo = observer(function PageNavig
 
   return (
     <div className="mt-4">
-      {parentPage && (
+      {ancestorPages.length > 0 && (
         <div className="mb-3">
           <p className="text-11 font-medium text-tertiary">{t("page_navigation_pane.tabs.info.sub_pages.parent")}</p>
-          <Link
-            href={parentPage.getRedirectionLink()}
-            className="mt-2 flex items-center gap-1.5 text-13 font-medium text-secondary hover:text-primary"
-          >
-            <PageIcon className="size-3.5 flex-shrink-0 text-tertiary" />
-            <span className="truncate">{getPageName(parentPage.name)}</span>
-          </Link>
+          <div className="mt-2 flex flex-col gap-1">
+            {ancestorPages.map((ancestor, index) => (
+              <Link
+                key={ancestor.id}
+                href={ancestor.getRedirectionLink()}
+                className="flex items-center gap-1.5 text-13 font-medium text-secondary hover:text-primary"
+                style={{ paddingLeft: `${index * 12}px` }}
+              >
+                <PageIcon className="size-3.5 flex-shrink-0 text-tertiary" />
+                <span className="truncate">{getPageName(ancestor.name)}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
       <div className="flex items-center justify-between">

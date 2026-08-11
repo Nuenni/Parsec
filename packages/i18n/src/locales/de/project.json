@@ -250,7 +250,7 @@
       },
       "sidebar": {
         "in_active": "Modul ist nicht aktiv.",
-        "invalid_date": "Ungültiges Datum. Bitte geben Sie ein gültiges Datum ein."
+        "invalid_date": "Noch kein Start- oder Zieldatum gesetzt."
       }
     },
     "quick_actions": {

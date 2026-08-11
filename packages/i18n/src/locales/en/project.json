@@ -250,7 +250,7 @@
       },
       "sidebar": {
         "in_active": "This module isn't active yet.",
-        "invalid_date": "Invalid date. Please enter valid date."
+        "invalid_date": "No start or target date set yet."
       }
     },
     "quick_actions": {

@@ -9,13 +9,19 @@ import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 // plane imports
-import { ISSUE_DISPLAY_FILTERS_BY_PAGE, PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
+import {
+  ISSUE_DISPLAY_FILTERS_BY_PAGE,
+  PROJECT_VIEW_TRACKER_ELEMENTS,
+  PROGRESS_STATE_GROUPS_DETAILS,
+} from "@plane/constants";
+import type { IModule } from "@plane/types";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
-import { Row, ERowVariant } from "@plane/ui";
+import { Row, ERowVariant, LinearProgressIndicator } from "@plane/ui";
 // hooks
 import { ProjectLevelWorkItemFiltersHOC } from "@/components/work-item-filters/filters-hoc/project-level";
 import { WorkItemFiltersRow } from "@/components/work-item-filters/filters-row";
 import { useIssues } from "@/hooks/store/use-issues";
+import { useModule } from "@/hooks/store/use-module";
 import { IssuesStoreContext } from "@/hooks/use-issue-layout-store";
 // local imports
 import { IssuePeekOverview } from "../../peek-overview";
@@ -50,9 +56,24 @@ export const ModuleLayoutRoot = observer(function ModuleLayoutRoot() {
   const moduleId = routerModuleId ? routerModuleId.toString() : undefined;
   // hooks
   const { issuesFilter } = useIssues(EIssuesStoreType.MODULE);
+  const { getModuleById } = useModule();
   // derived values
   const workItemFilters = moduleId ? issuesFilter?.getIssueFilters(moduleId) : undefined;
   const activeLayout = workItemFilters?.displayFilters?.layout || undefined;
+  const moduleDetails = moduleId ? getModuleById(moduleId) : undefined;
+  const moduleTotalIssues = moduleDetails
+    ? moduleDetails.backlog_issues +
+      moduleDetails.unstarted_issues +
+      moduleDetails.started_issues +
+      moduleDetails.completed_issues +
+      moduleDetails.cancelled_issues
+    : 0;
+  const progressIndicatorData = PROGRESS_STATE_GROUPS_DETAILS.map((group, index) => ({
+    id: index,
+    name: group.title,
+    value: moduleTotalIssues > 0 ? (moduleDetails?.[group.key as keyof IModule] as number) : 0,
+    color: group.color,
+  }));
 
   useSWR(
     workspaceSlug && projectId && moduleId
@@ -81,6 +102,11 @@ export const ModuleLayoutRoot = observer(function ModuleLayoutRoot() {
       >
         {({ filter: moduleWorkItemsFilter }) => (
           <div className="relative flex h-full w-full flex-col overflow-hidden">
+            {moduleDetails && moduleTotalIssues > 0 && (
+              <div className="px-page-x py-2">
+                <LinearProgressIndicator size="lg" data={progressIndicatorData} />
+              </div>
+            )}
             {moduleWorkItemsFilter && (
               <WorkItemFiltersRow
                 filter={moduleWorkItemsFilter}
