@@ -81,9 +81,45 @@ absolute `Location` from its own `$scheme`/listen port, leaking an internal
 `http://host:3000/...` URL to clients instead of a relative path. Both
 files were a 0-diff match against upstream before this change.
 
+`EMAIL_FROM` **must** be configured (Admin -> Email settings, or the
+`EMAIL_FROM` env var) - upstream's own fallback if it's never set is
+`Team Plane <team@mailer.plane.so>`, a domain we don't control. That
+fallback would fail SPF/DKIM for our sending domain, so it wouldn't show
+up as "wrong sender," it would show up as "emails never arrive" - a much
+harder thing to debug. Verified live: our instance has it set correctly
+(`instance_configurations` table, key `EMAIL_FROM`), and every sender
+(bgtasks, the admin's "send test email" command, the API) resolves it
+through the same `get_email_configuration()` function, so one DB row
+covers all of them.
+
 `space` does **not** use nginx in production - its Docker image runs
 `react-router-serve` directly (see `Dockerfile.space`'s final stage).
 `apps/space/nginx/nginx.conf` still exists in the repo (unmodified from
 upstream) but isn't part of the deployed image; don't assume a change there
 takes effect. This matters for any future nginx change too: it only ever
 needs to touch `web` and `admin`.
+
+## CI guard against Plane-infrastructure references
+
+`.github/workflows/plane-reference-check.yml` runs
+`.github/scripts/check-plane-references.mjs` on every PR into
+`parsec-main`: a broad, case-insensitive search for the word stem
+"plane" across `apps/` and `packages/`, so a stray `plane.so` link or
+contact channel doesn't have to be hand-found by a future audit again.
+
+Two files filter its output, and they are not the same kind of list:
+
+- `plane-reference-exceptions.txt` is for references that are correct
+  and may stay **forever** - our own `@plane/*` package scope, the
+  Django backend's own `plane` Python package, license headers, the
+  docs links kept per the section above. An entry here is a decision,
+  made once.
+- `plane-reference-baseline.txt` is a **debt ledger**, not an
+  exceptions list - known, real, unfixed references (visible brand
+  text with no link, or links belonging to a larger deferred cleanup
+  like the paid-tier upsell UI). An entry here is an IOU. It should
+  shrink as that work happens, not grow as a place to dump whatever's
+  inconvenient to fix under time pressure.
+
+If a hit doesn't clearly belong in either file, it belongs in a report
+to whoever's reviewing the PR - not silently in the baseline.

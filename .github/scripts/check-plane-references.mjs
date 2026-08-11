@@ -123,12 +123,18 @@ function main() {
   if (WRITE_BASELINE) {
     const keys = [...new Set(afterExceptions.map((h) => baselineKey(h.file, h.text)))].toSorted();
     const header =
-      "# Known, already-reviewed references to Plane infrastructure that are deliberately NOT\n" +
-      "# fixed here - either visible brand text with no link, or a real link that's part of a\n" +
-      "# larger, separately-scoped cleanup (e.g. the paid-tier upsell UI family: edition badge,\n" +
-      "# upgrade modal, active-cycles paywall). Not exceptions - they're still open findings,\n" +
-      "# just ones this guard shouldn't keep re-flagging every run. See the audit report for\n" +
-      "# what's tracked here and why.\n" +
+      "# This is NOT the exceptions list. plane-reference-exceptions.txt is for references that\n" +
+      "# are correct and may stay forever (our own package namespace, license headers, the docs\n" +
+      "# links we deliberately kept) - an entry there is a decision, made once, done.\n" +
+      "#\n" +
+      "# This file is a debt ledger. Every line below is a known, already-reviewed reference to\n" +
+      "# Plane infrastructure that is real and still unfixed - visible brand text with no link,\n" +
+      "# or a link that's part of a larger, separately-scoped cleanup (e.g. the paid-tier upsell\n" +
+      "# UI family: edition badge, upgrade modal, active-cycles paywall). An entry here is not a\n" +
+      "# free pass, it's an IOU. This list should shrink as those cleanups happen, not grow as a\n" +
+      "# place to dump anything inconvenient to fix under time pressure. See the audit report for\n" +
+      "# what's tracked here and why. If a hit doesn't clearly belong in either file, it belongs\n" +
+      "# in a report, not silently in this one.\n" +
       "# Regenerated via: node .github/scripts/check-plane-references.mjs --write-baseline\n" +
       "# Format: <file>\\t<exact matched line, trimmed>\n";
     writeFileSync(BASELINE_FILE, header + keys.join("\n") + "\n");
