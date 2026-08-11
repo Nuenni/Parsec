@@ -123,3 +123,48 @@ Two files filter its output, and they are not the same kind of list:
 
 If a hit doesn't clearly belong in either file, it belongs in a report
 to whoever's reviewing the PR - not silently in the baseline.
+
+## Upsell and billing
+
+The workspace edition badge (sidebar) and the Active Cycles page's upgrade
+banner were removed entirely, not just de-linked - both had "Upgrade"
+buttons that opened real, working checkout pages at app.plane.so. On a
+self-hosted instance that's not a branding issue, it's a way for someone to
+pay Plane Software, Inc. real money for a license that unlocks nothing
+here.
+
+The billing comparison page (workspace settings -> Billing) still has the
+same kind of upgrade content, including its own working checkout button -
+left in place for now because it's only reachable by a workspace admin who
+actively navigates to Settings, and today that's a single person. This is
+a deliberate, temporary risk acceptance, not an oversight - revisit if that
+changes.
+
+## Working with automated find-and-replace across this codebase
+
+Any future pass that mechanically replaces "Plane" with "Parsec" (or
+similar) needs a human reviewing the diff before it's committed, not just
+before it's designed. A word-boundary-safe find-and-replace pass in this
+repo still corrupted, in one run: S3-hosted image URLs in email templates
+(real assets on Plane's infrastructure, not ours to rename), the "forked
+from Plane" AGPL attribution line (renaming it to "forked from Parsec"
+makes the required notice nonsensical), `tsconfig.json` path aliases
+(`@/plane-editor/*`) and every import statement using them, icon-registry
+lookup keys and file-path re-exports, a functional reserved-workspace-slug
+blocklist, Celery/Django internal process and URL names, and i18n JSON
+**keys** (not just values - a key rename breaks every `t("...")` call site
+that references it).
+
+The rule for next time: "Plane" is an identifier in many places in this
+codebase, not a brand name, and nothing distinguishes the two syntactically.
+Text replacement has to be manual, scoped to strings actually rendered to a
+user, one file at a time - never a blind pattern match across the tree.
+
+## `lint --fix` needs a diff review too
+
+`pnpm exec oxlint --fix` once rewrote working code while "fixing" an
+unrelated warning - it collapsed `await Promise.all([x])` into `[await x]`,
+which is not equivalent (no `Promise.all` semantics, the resolved value is
+discarded into an array). This had nothing to do with the lint rule that
+triggered it. Treat `--fix` output the same as any other code change: read
+the diff before staging, don't assume "the linter did it" means it's safe.
