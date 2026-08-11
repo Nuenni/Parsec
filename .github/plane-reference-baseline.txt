@@ -97,11 +97,6 @@ apps/web/core/components/home/home-dashboard-widgets.tsx	new_at_plane: {
 apps/web/core/components/home/home-dashboard-widgets.tsx	title: "home.new_at_plane.title",
 apps/web/core/components/inbox/sidebar/inbox-list-item.tsx	<Avatar src={getFileURL("")} name={"Plane"} size="md" showTooltip />
 apps/web/core/components/inbox/sidebar/inbox-list-item.tsx	{createdByDetails && createdByDetails.email?.includes("intake@plane.so") ? (
-apps/web/core/components/license/modal/upgrade-modal.tsx	PLANE_COMMUNITY_PRODUCTS,
-apps/web/core/components/license/modal/upgrade-modal.tsx	const product = PLANE_COMMUNITY_PRODUCTS[planVariant];
-apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.BUSINESS]}
-apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.ENTERPRISE]}
-apps/web/core/components/license/modal/upgrade-modal.tsx	product={PLANE_COMMUNITY_PRODUCTS[EProductSubscriptionEnum.PRO]}
 apps/web/core/components/navigation/tab-navigation-utils.ts	export const TAB_PREFS_KEY = "plane_tab_prefs";
 apps/web/core/components/power-k/config/help-commands.ts	i18n_title: "power_k.help_actions.open_plane_documentation",
 apps/web/core/components/power-k/config/help-commands.ts	id: "open_plane_documentation",
@@ -150,7 +145,6 @@ apps/web/core/lib/stale-asset-error.ts	const STALE_ASSET_RELOAD_KEY = "__plane_c
 apps/web/core/store/user/base-permissions.store.ts	type ETempUserRole = TUserPermissions | EUserWorkspaceRoles | EUserProjectRoles; // TODO: Remove this once we have migrated user permissions to enums to plane constants package
 apps/web/public/site.webmanifest.json	{ "src": "/plane-logos/plane-mobile-pwa.png", "sizes": "192x192", "type": "image/png" },
 apps/web/public/site.webmanifest.json	{ "src": "/plane-logos/plane-mobile-pwa.png", "sizes": "512x512", "type": "image/png" }
-packages/constants/src/endpoints.ts	export const MARKETING_PRICING_PAGE_LINK = "https://plane.so/pricing";
 packages/constants/src/endpoints.ts	export const SUPPORT_EMAIL = process.env.VITE_SUPPORT_EMAIL || "support@plane.so";
 packages/constants/src/endpoints.ts	export const WEBSITE_URL = process.env.VITE_WEBSITE_URL || "https://plane.so";
 packages/constants/src/metadata.ts	export const SITE_NAME = "Plane | Simple, extensible, open-source project management tool.";
