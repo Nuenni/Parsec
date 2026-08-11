@@ -53,9 +53,7 @@ const InstanceGiteaAuthenticationPage = observer(function InstanceGiteaAuthentic
     });
 
     await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
+      .then(() => setIsSubmitting(false))
       .catch((err) => {
         console.error(err);
         setIsSubmitting(false);
@@ -69,7 +67,7 @@ const InstanceGiteaAuthenticationPage = observer(function InstanceGiteaAuthentic
       customHeader={
         <AuthenticationMethodCard
           name="Gitea"
-          description="Allow members to login or sign up to plane with their Gitea accounts."
+          description="Allow members to login or sign up to parsec with their Gitea accounts."
           icon={<img src={giteaLogo} height={24} width={24} alt="Gitea Logo" />}
           config={
             <ToggleSwitch

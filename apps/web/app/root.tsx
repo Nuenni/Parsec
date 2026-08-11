@@ -36,7 +36,7 @@ import "@fontsource/material-symbols-rounded";
 // oxlint-disable-next-line import/no-unassigned-import
 import "@fontsource/ibm-plex-mono";
 
-const APP_TITLE = "Plane | Simple, extensible, open-source project management tool.";
+const APP_TITLE = "Parsec | Simple, extensible, open-source project management tool.";
 
 export const links: LinksFunction = () => [
   { rel: "icon", type: "image/svg+xml", href: parsecMark },
@@ -65,7 +65,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#fff" />
         {/* Meta info for PWA */}
-        <meta name="application-name" content="Plane" />
+        <meta name="application-name" content="Parsec" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={SITE_NAME} />

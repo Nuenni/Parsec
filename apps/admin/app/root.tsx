@@ -22,7 +22,7 @@ import "@fontsource/material-symbols-rounded";
 // oxlint-disable-next-line import/no-unassigned-import
 import "@fontsource/ibm-plex-mono";
 
-const APP_TITLE = "Plane | Simple, extensible, open-source project management tool.";
+const APP_TITLE = "Parsec | Simple, extensible, open-source project management tool.";
 const APP_DESCRIPTION =
   "Open-source project management tool to manage work items, sprints, and product roadmaps with peace of mind.";
 
