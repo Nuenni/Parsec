@@ -65,6 +65,8 @@ from .intake import (
     IntakeIssueDetailAPIEndpoint,
 )
 
+from .email_intake import EmailIssueLinkAPIEndpoint
+
 from .asset import UserAssetEndpoint, UserServerAssetEndpoint, GenericAssetEndpoint
 
 from .user import UserEndpoint
