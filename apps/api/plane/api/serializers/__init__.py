@@ -53,6 +53,7 @@ from .intake import (
     IntakeIssueCreateSerializer,
     IntakeIssueUpdateSerializer,
 )
+from .email_intake import EmailIssueLinkSerializer, EmailIssueLinkCreateSerializer
 from .estimate import EstimateSerializer, EstimatePointSerializer
 from .asset import (
     UserAssetUploadSerializer,
