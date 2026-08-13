@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
-"""Fork-specific addition, not part of upstream Plane."""
+"""Fork-specific addition, absent from the upstream project this was forked from."""
 
 from django.urls import path
 

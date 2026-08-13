@@ -7,7 +7,7 @@ IssueEmailLinkEndpoint, which is session-only and therefore unreachable for
 external callers (e.g. a website contact form filing a work item over the
 plain REST API with X-Api-Key).
 
-Fork-specific addition, not part of upstream Plane.
+Fork-specific addition, absent from the upstream project this was forked from.
 """
 
 # Django imports
