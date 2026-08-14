@@ -4,4 +4,6 @@
  * See the LICENSE file for details.
  */
 
-export const useBulkOperationStatus = () => false;
+// Upstream gates this behind a paid subscription plan. Parsec has no such
+// tier to gate against, so bulk operations are simply always on.
+export const useBulkOperationStatus = () => true;

@@ -1214,6 +1214,61 @@ class IssueBulkUpdateDateEndpoint(BaseAPIView):
         return Response({"message": "Issues updated successfully"}, status=status.HTTP_200_OK)
 
 
+class BulkOperationIssuesEndpoint(BaseAPIView):
+    """Apply one property change across many work items in a single request.
+
+    The payload mirrors the frontend's TBulkOperationsPayload
+    ({issue_ids, properties}), which was already wired up on the client
+    (issues.bulkUpdateProperties) with no matching endpoint to call - this is
+    that endpoint. Only state_id is handled for now, since that's the only
+    bulk action actually built on the frontend (the selection bar's "Change
+    status"); the payload shape has room for the other TBulkIssueProperties
+    fields (priority, labels, assignees, ...) to be added the same way later.
+    """
+
+    @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
+    def post(self, request, slug, project_id):
+        issue_ids = request.data.get("issue_ids", [])
+        properties = request.data.get("properties", {})
+
+        if not issue_ids:
+            return Response({"error": "issue_ids are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        state_id = properties.get("state_id")
+        if not state_id:
+            return Response({"error": "properties.state_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # A state from another project would silently detach the issue from
+        # every state-scoped filter/board it appears in.
+        if not State.objects.filter(pk=state_id, project_id=project_id).exists():
+            return Response(
+                {"error": "State does not belong to this project"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        issues = Issue.issue_objects.filter(workspace__slug=slug, project_id=project_id, pk__in=issue_ids)
+        epoch = int(timezone.now().timestamp())
+        updated_count = 0
+        for issue in issues:
+            if str(issue.state_id) == str(state_id):
+                continue
+            old_state_id = issue.state_id
+            issue.state_id = state_id
+            issue.save(update_fields=["state"])
+            issue_activity.delay(
+                type="issue.activity.updated",
+                requested_data=json.dumps({"state_id": str(state_id)}),
+                actor_id=str(request.user.id),
+                issue_id=str(issue.id),
+                project_id=str(project_id),
+                current_instance=json.dumps({"state_id": str(old_state_id)}),
+                epoch=epoch,
+                notification=True,
+            )
+            updated_count += 1
+
+        return Response({"updated": updated_count}, status=status.HTTP_200_OK)
+
+
 class IssueMetaEndpoint(BaseAPIView):
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER, ROLE.GUEST], level="PROJECT")
     def get(self, request, slug, project_id, issue_id):
