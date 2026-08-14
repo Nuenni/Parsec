@@ -61,6 +61,7 @@ from plane.db.models import (
     IssueReaction,
     IssueRelation,
     IssueSubscriber,
+    Label,
     ProjectUserProperty,
     ModuleIssue,
     Project,
@@ -1215,15 +1216,18 @@ class IssueBulkUpdateDateEndpoint(BaseAPIView):
 
 
 class BulkOperationIssuesEndpoint(BaseAPIView):
-    """Apply one property change across many work items in a single request.
+    """Apply property changes across many work items in a single request.
 
     The payload mirrors the frontend's TBulkOperationsPayload
     ({issue_ids, properties}), which was already wired up on the client
     (issues.bulkUpdateProperties) with no matching endpoint to call - this is
-    that endpoint. Only state_id is handled for now, since that's the only
-    bulk action actually built on the frontend (the selection bar's "Change
-    status"); the payload shape has room for the other TBulkIssueProperties
-    fields (priority, labels, assignees, ...) to be added the same way later.
+    that endpoint. Handles the properties the bulk-selection bar's command
+    menu actually offers: state_id and priority (scalar, replace), and
+    assignee_ids/label_ids (add-only - the same union-with-existing
+    semantics bulkUpdateProperties already applies client-side, so a call
+    here never removes an assignee or label an issue already has). Due
+    dates and cycle membership go through their own existing endpoints
+    instead, since neither fits the "one property, many issues" shape here.
     """
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])
@@ -1235,38 +1239,138 @@ class BulkOperationIssuesEndpoint(BaseAPIView):
             return Response({"error": "issue_ids are required"}, status=status.HTTP_400_BAD_REQUEST)
 
         state_id = properties.get("state_id")
-        if not state_id:
-            return Response({"error": "properties.state_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        priority = properties.get("priority")
+        assignee_ids = properties.get("assignee_ids")
+        label_ids = properties.get("label_ids")
 
-        # A state from another project would silently detach the issue from
-        # every state-scoped filter/board it appears in.
-        if not State.objects.filter(pk=state_id, project_id=project_id).exists():
-            return Response(
-                {"error": "State does not belong to this project"}, status=status.HTTP_400_BAD_REQUEST
+        if not any([state_id, priority, assignee_ids, label_ids]):
+            return Response({"error": "No supported property given"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if state_id and not State.objects.filter(pk=state_id, project_id=project_id).exists():
+            return Response({"error": "State does not belong to this project"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if priority and priority not in dict(Issue.PRIORITY_CHOICES):
+            return Response({"error": "Invalid priority"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if assignee_ids:
+            valid_member_ids = set(
+                str(member_id)
+                for member_id in ProjectMember.objects.filter(
+                    project_id=project_id, is_active=True
+                ).values_list("member_id", flat=True)
             )
+            if not set(str(a) for a in assignee_ids) <= valid_member_ids:
+                return Response(
+                    {"error": "One or more assignees are not members of this project"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if label_ids:
+            valid_label_ids = set(
+                str(label_id) for label_id in Label.objects.filter(project_id=project_id).values_list("id", flat=True)
+            )
+            if not set(str(l) for l in label_ids) <= valid_label_ids:
+                return Response(
+                    {"error": "One or more labels do not belong to this project"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
         issues = Issue.issue_objects.filter(workspace__slug=slug, project_id=project_id, pk__in=issue_ids)
         epoch = int(timezone.now().timestamp())
-        updated_count = 0
-        for issue in issues:
-            if str(issue.state_id) == str(state_id):
-                continue
-            old_state_id = issue.state_id
-            issue.state_id = state_id
-            issue.save(update_fields=["state"])
-            issue_activity.delay(
-                type="issue.activity.updated",
-                requested_data=json.dumps({"state_id": str(state_id)}),
-                actor_id=str(request.user.id),
-                issue_id=str(issue.id),
-                project_id=str(project_id),
-                current_instance=json.dumps({"state_id": str(old_state_id)}),
-                epoch=epoch,
-                notification=True,
-            )
-            updated_count += 1
+        updated_ids = set()
 
-        return Response({"updated": updated_count}, status=status.HTTP_200_OK)
+        for issue in issues:
+            update_fields = []
+            if state_id and str(issue.state_id) != str(state_id):
+                old_state_id = issue.state_id
+                issue.state_id = state_id
+                update_fields.append("state")
+                issue_activity.delay(
+                    type="issue.activity.updated",
+                    requested_data=json.dumps({"state_id": str(state_id)}),
+                    actor_id=str(request.user.id),
+                    issue_id=str(issue.id),
+                    project_id=str(project_id),
+                    current_instance=json.dumps({"state_id": str(old_state_id)}),
+                    epoch=epoch,
+                    notification=True,
+                )
+            if priority and issue.priority != priority:
+                old_priority = issue.priority
+                issue.priority = priority
+                update_fields.append("priority")
+                issue_activity.delay(
+                    type="issue.activity.updated",
+                    requested_data=json.dumps({"priority": priority}),
+                    actor_id=str(request.user.id),
+                    issue_id=str(issue.id),
+                    project_id=str(project_id),
+                    current_instance=json.dumps({"priority": old_priority}),
+                    epoch=epoch,
+                    notification=True,
+                )
+            if update_fields:
+                issue.save(update_fields=update_fields)
+                updated_ids.add(issue.id)
+
+            if assignee_ids:
+                existing_assignee_ids = set(
+                    str(a) for a in IssueAssignee.objects.filter(issue=issue).values_list("assignee_id", flat=True)
+                )
+                new_assignee_ids = [a for a in assignee_ids if str(a) not in existing_assignee_ids]
+                if new_assignee_ids:
+                    IssueAssignee.objects.bulk_create(
+                        [
+                            IssueAssignee(
+                                issue=issue,
+                                assignee_id=assignee_id,
+                                project_id=project_id,
+                                workspace_id=issue.workspace_id,
+                            )
+                            for assignee_id in new_assignee_ids
+                        ]
+                    )
+                    issue_activity.delay(
+                        type="issue.activity.updated",
+                        requested_data=json.dumps({"assignee_ids": [str(a) for a in assignee_ids]}),
+                        actor_id=str(request.user.id),
+                        issue_id=str(issue.id),
+                        project_id=str(project_id),
+                        current_instance=json.dumps({"assignee_ids": list(existing_assignee_ids)}),
+                        epoch=epoch,
+                        notification=True,
+                    )
+                    updated_ids.add(issue.id)
+
+            if label_ids:
+                existing_label_ids = set(
+                    str(l) for l in IssueLabel.objects.filter(issue=issue).values_list("label_id", flat=True)
+                )
+                new_label_ids = [l for l in label_ids if str(l) not in existing_label_ids]
+                if new_label_ids:
+                    IssueLabel.objects.bulk_create(
+                        [
+                            IssueLabel(
+                                issue=issue,
+                                label_id=label_id,
+                                project_id=project_id,
+                                workspace_id=issue.workspace_id,
+                            )
+                            for label_id in new_label_ids
+                        ]
+                    )
+                    issue_activity.delay(
+                        type="issue.activity.updated",
+                        requested_data=json.dumps({"label_ids": [str(l) for l in label_ids]}),
+                        actor_id=str(request.user.id),
+                        issue_id=str(issue.id),
+                        project_id=str(project_id),
+                        current_instance=json.dumps({"label_ids": list(existing_label_ids)}),
+                        epoch=epoch,
+                        notification=True,
+                    )
+                    updated_ids.add(issue.id)
+
+        return Response({"updated": len(updated_ids)}, status=status.HTTP_200_OK)
 
 
 class IssueMetaEndpoint(BaseAPIView):
