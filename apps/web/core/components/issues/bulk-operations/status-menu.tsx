@@ -22,6 +22,7 @@ import { useProjectState } from "@/hooks/store/use-project-state";
 import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
 // local imports
 import { PowerKModalCommandItem } from "@/components/power-k/ui/modal/command-item";
+import { useIssuesByProject } from "./use-issues-by-project";
 
 type Props = {
   issueIds: string[];
@@ -37,20 +38,7 @@ export const BulkOperationsStatusMenu = observer(function BulkOperationsStatusMe
   const { issue } = useIssueDetail(EIssueServiceType.ISSUES);
   const storeType = useIssueStoreType();
   const { issues } = useIssues(storeType);
-
-  // Every selected issue's project, since the state list - and the endpoint
-  // itself - is scoped per project. Most selections come from a single
-  // project's list/spreadsheet/gantt view, but a workspace-level "All
-  // Issues" view can span several.
-  const issuesByProject = useMemo(() => {
-    const grouped: Record<string, string[]> = {};
-    for (const issueId of issueIds) {
-      const projectId = issue.getIssueById(issueId)?.project_id;
-      if (!projectId) continue;
-      (grouped[projectId] ??= []).push(issueId);
-    }
-    return grouped;
-  }, [issue, issueIds]);
+  const issuesByProject = useIssuesByProject(issue, issueIds);
 
   const projectIds = Object.keys(issuesByProject);
 
