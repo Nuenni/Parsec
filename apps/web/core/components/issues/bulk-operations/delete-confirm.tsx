@@ -47,6 +47,7 @@ export const BulkOperationsDeleteConfirm = observer(function BulkOperationsDelet
         title: "Error!",
         message: "One or more work items could not be deleted. Please try again.",
       });
+    } finally {
       setIsDeleting(false);
     }
   };
