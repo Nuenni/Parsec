@@ -46,10 +46,17 @@ class EmailIssueLinkAPIEndpoint(BaseAPIView):
         return Response(EmailIssueLinkSerializer(link).data, status=status.HTTP_200_OK)
 
     def post(self, request, slug, project_id, issue_id):
-        existing = EmailIssueLink.objects.filter(
+        # all_objects, not objects: a soft-deleted EmailIssueLink still holds the
+        # OneToOneField's unique DB constraint, so treating it as "no existing
+        # record" here would hit an IntegrityError trying to insert a second row
+        # for the same issue instead of restoring the old one.
+        existing = EmailIssueLink.all_objects.filter(
             workspace__slug=slug, project_id=project_id, issue_id=issue_id
         ).first()
         if existing is not None:
+            if existing.deleted_at is not None:
+                existing.deleted_at = None
+                existing.save(update_fields=["deleted_at"])
             return Response(EmailIssueLinkSerializer(existing).data, status=status.HTTP_200_OK)
 
         issue = Issue.objects.filter(
@@ -67,6 +74,6 @@ class EmailIssueLinkAPIEndpoint(BaseAPIView):
         except IntegrityError:
             # Lost a race against a concurrent create for the same issue - the
             # other one won, so return it rather than erroring out a retry.
-            existing = EmailIssueLink.objects.get(issue_id=issue_id)
+            existing = EmailIssueLink.all_objects.get(issue_id=issue_id)
             return Response(EmailIssueLinkSerializer(existing).data, status=status.HTTP_200_OK)
         return Response(EmailIssueLinkSerializer(serializer.instance).data, status=status.HTTP_201_CREATED)
