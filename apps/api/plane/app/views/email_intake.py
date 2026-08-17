@@ -169,7 +169,11 @@ class IssueEmailLinkEndpoint(BaseAPIView):
         if issue is None:
             return Response({"error": "Issue not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        existing = EmailIssueLink.objects.filter(
+        # all_objects, not objects: a soft-deleted EmailIssueLink still holds the
+        # OneToOneField's unique DB constraint, so treating it as "no existing
+        # record" here would hit an IntegrityError trying to insert a second row
+        # for the same issue instead of restoring and updating the old one.
+        existing = EmailIssueLink.all_objects.filter(
             workspace__slug=slug, project_id=project_id, issue_id=issue_id
         ).first()
 
@@ -181,13 +185,13 @@ class IssueEmailLinkEndpoint(BaseAPIView):
 
         try:
             if existing is not None:
-                serializer.save()
+                serializer.save(deleted_at=None)
             else:
                 serializer.save(issue=issue, project_id=project_id)
         except IntegrityError:
             # Lost a race against a concurrent create for the same issue - the
             # other one won, so return it rather than erroring out a retry.
-            existing = EmailIssueLink.objects.get(issue_id=issue_id)
+            existing = EmailIssueLink.all_objects.get(issue_id=issue_id)
             return Response(
                 {
                     "id": str(existing.id),
