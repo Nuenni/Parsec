@@ -439,6 +439,7 @@
     "assignees": "Acteurs",
     "assignee": "Acteur",
     "created_by": "Créé par",
+    "requester_email": "E-mail du demandeur",
     "none": "Aucun",
     "link": "Lien",
     "estimates": "Estimations",

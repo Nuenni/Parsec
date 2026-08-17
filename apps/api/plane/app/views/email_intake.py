@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+# Django imports
+from django.db import IntegrityError
+
 # Module imports
 from .base import BaseAPIView, BaseViewSet
 from plane.app.permissions import allow_permission, ProjectBasePermission, ProjectEntityPermission, ROLE
-from plane.app.serializers import EmailIntakeConfigSerializer
+from plane.app.serializers import EmailIntakeConfigSerializer, EmailIssueLinkCreateSerializer
 from plane.bgtasks.email_intake_task import list_imap_folders, test_imap_connection, test_smtp_connection
-from plane.db.models import EmailIntakeConfig, EmailIssueLink
+from plane.db.models import EmailIntakeConfig, EmailIssueLink, Issue
 from plane.license.utils.encryption import decrypt_data
 from rest_framework.response import Response
 from rest_framework import status
@@ -132,7 +135,15 @@ class EmailIntakeConfigViewSet(BaseViewSet):
 
 
 class IssueEmailLinkEndpoint(BaseAPIView):
-    """Read-only: whether an issue originated from (or is linked to) an email thread."""
+    """Whether an issue originated from (or is linked to) an email thread.
+
+    GET is read-only. POST is update-or-create so a logged-in user can fill
+    in (or correct) the requester email/name from the issue properties
+    sidebar for a work item that didn't arrive through the email intake
+    pipeline - unlike EmailIssueLinkAPIEndpoint's get-or-create, a second
+    POST here is expected to overwrite the previous value rather than be a
+    no-op retry.
+    """
 
     permission_classes = [ProjectEntityPermission]
 
@@ -149,4 +160,49 @@ class IssueEmailLinkEndpoint(BaseAPIView):
                 "requester_name": link.requester_name,
             },
             status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, slug, project_id, issue_id):
+        issue = Issue.objects.filter(
+            workspace__slug=slug, project_id=project_id, pk=issue_id
+        ).first()
+        if issue is None:
+            return Response({"error": "Issue not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        existing = EmailIssueLink.objects.filter(
+            workspace__slug=slug, project_id=project_id, issue_id=issue_id
+        ).first()
+
+        serializer = EmailIssueLinkCreateSerializer(
+            instance=existing, data=request.data, partial=existing is not None
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if existing is not None:
+                serializer.save()
+            else:
+                serializer.save(issue=issue, project_id=project_id)
+        except IntegrityError:
+            # Lost a race against a concurrent create for the same issue - the
+            # other one won, so return it rather than erroring out a retry.
+            existing = EmailIssueLink.objects.get(issue_id=issue_id)
+            return Response(
+                {
+                    "id": str(existing.id),
+                    "requester_email": existing.requester_email,
+                    "requester_name": existing.requester_name,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        link = serializer.instance
+        return Response(
+            {
+                "id": str(link.id),
+                "requester_email": link.requester_email,
+                "requester_name": link.requester_name,
+            },
+            status=status.HTTP_200_OK if existing is not None else status.HTTP_201_CREATED,
         )

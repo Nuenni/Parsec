@@ -18,6 +18,7 @@
       "assignee": "Aggiungi assegnatari",
       "start_date": "Aggiungi data di inizio",
       "due_date": "Aggiungi scadenza",
+      "requester_email": "Aggiungi email del richiedente",
       "parent": "Aggiungi elemento di lavoro principale",
       "sub_issue": "Aggiungi sotto-elemento di lavoro",
       "dependency": "Aggiungi dipendenza",

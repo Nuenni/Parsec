@@ -439,6 +439,7 @@
     "assignees": "Назначенные",
     "assignee": "Назначенный",
     "created_by": "Создано",
+    "requester_email": "Email заявителя",
     "none": "Нет",
     "link": "Ссылка",
     "estimates": "Оценки",

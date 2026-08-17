@@ -439,6 +439,7 @@
     "assignees": "Priradení",
     "assignee": "Priradené",
     "created_by": "Vytvoril",
+    "requester_email": "E-mail žiadateľa",
     "none": "Žiadne",
     "link": "Odkaz",
     "estimates": "Odhady",

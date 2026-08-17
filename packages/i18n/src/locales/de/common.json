@@ -439,6 +439,7 @@
     "assignees": "Zugewiesene",
     "assignee": "Zugewiesen",
     "created_by": "Erstellt von",
+    "requester_email": "E-Mail des Anfragenden",
     "none": "Keine",
     "link": "Link",
     "estimates": "Schätzungen",

@@ -439,6 +439,7 @@
     "assignees": "Responsáveis",
     "assignee": "Responsável",
     "created_by": "Criado por",
+    "requester_email": "E-mail do solicitante",
     "none": "Nenhum",
     "link": "Link",
     "estimates": "Estimativas",

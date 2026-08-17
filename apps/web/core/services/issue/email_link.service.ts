@@ -25,4 +25,15 @@ export class IssueEmailLinkService extends APIService {
       .then((response) => response?.data)
       .catch(() => null);
   }
+
+  async updateEmailLink(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    data: Partial<Pick<TIssueEmailLink, "requester_email" | "requester_name">>
+  ): Promise<TIssueEmailLink> {
+    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/email-link/`, data).then(
+      (response) => response?.data
+    );
+  }
 }
