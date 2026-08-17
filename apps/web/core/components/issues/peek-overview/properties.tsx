@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Mail } from "lucide-react";
 import { observer } from "mobx-react";
 // i18n
 import { useTranslation } from "@plane/i18n";
@@ -41,6 +42,7 @@ import type { TIssueOperations } from "../issue-detail";
 import { IssueCycleSelect } from "../issue-detail/cycle-select";
 import { IssueLabel } from "../issue-detail/label";
 import { IssueModuleSelect } from "../issue-detail/module-select";
+import { RequesterEmailInput } from "../issue-detail/requester-email";
 
 interface IPeekOverviewProperties {
   workspaceSlug: string;
@@ -242,6 +244,15 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
 
         <SidebarPropertyListItem icon={LabelPropertyIcon} label={t("common.labels")}>
           <IssueLabel workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} disabled={disabled} />
+        </SidebarPropertyListItem>
+
+        <SidebarPropertyListItem icon={Mail} label={t("common.requester_email")}>
+          <RequesterEmailInput
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
+            issueId={issueId}
+            disabled={disabled}
+          />
         </SidebarPropertyListItem>
       </div>
     </div>
