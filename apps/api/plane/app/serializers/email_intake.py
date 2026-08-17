@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 # Module imports
 from .base import BaseSerializer
-from plane.db.models import EmailIntakeConfig
+from plane.db.models import EmailIntakeConfig, EmailIssueLink
 from plane.license.utils.encryption import encrypt_data
 
 # from_name is combined with email_address into "Name <email>" when sending (see
@@ -82,3 +82,27 @@ class EmailIntakeConfigSerializer(BaseSerializer):
         else:
             validated_data.pop("smtp_password", None)
         return super().update(instance, validated_data)
+
+
+class EmailIssueLinkCreateSerializer(BaseSerializer):
+    """Get-or-create/update the requester email for a work item from the app UI.
+
+    Counterpart to plane.api.serializers.EmailIssueLinkCreateSerializer, which
+    serves the API-key authenticated path (PG-266/ghost-glue). Kept separate
+    since app views never import from the api package.
+    """
+
+    class Meta:
+        model = EmailIssueLink
+        fields = ["requester_email", "requester_name"]
+        read_only_fields = [
+            "id",
+            "workspace",
+            "project",
+            "issue",
+            "message_ids",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+        ]

@@ -439,6 +439,7 @@
     "assignees": "Assignees",
     "assignee": "Assignee",
     "created_by": "Created by",
+    "requester_email": "Requester email",
     "none": "None",
     "link": "Link",
     "estimates": "Estimates",

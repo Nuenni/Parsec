@@ -439,6 +439,7 @@
     "assignees": "Assegnatari",
     "assignee": "Assegnatario",
     "created_by": "Creato da",
+    "requester_email": "Email del richiedente",
     "none": "Nessuno",
     "link": "Link",
     "estimates": "Stime",

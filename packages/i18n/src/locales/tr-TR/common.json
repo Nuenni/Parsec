@@ -439,6 +439,7 @@
     "assignees": "Atananlar",
     "assignee": "Atanan",
     "created_by": "Oluşturan",
+    "requester_email": "Talep sahibinin e-postası",
     "none": "Yok",
     "link": "Bağlantı",
     "estimates": "Tahminler",

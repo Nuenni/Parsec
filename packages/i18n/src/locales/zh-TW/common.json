@@ -439,6 +439,7 @@
     "assignees": "指派對象",
     "assignee": "指派對象",
     "created_by": "建立者",
+    "requester_email": "請求者電子郵件",
     "none": "無",
     "link": "連結",
     "estimates": "評估",

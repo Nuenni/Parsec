@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Mail } from "lucide-react";
 import { observer } from "mobx-react";
 // i18n
 import { useTranslation } from "@plane/i18n";
@@ -41,6 +42,7 @@ import { SidebarPropertyListItem } from "@/components/common/layout/sidebar/prop
 import { IssueCycleSelect } from "./cycle-select";
 import { IssueLabel } from "./label";
 import { IssueModuleSelect } from "./module-select";
+import { RequesterEmailInput } from "./requester-email";
 import type { TIssueOperations } from "./root";
 
 type Props = {
@@ -242,6 +244,15 @@ export const IssueDetailsSidebar = observer(function IssueDetailsSidebar(props: 
 
             <SidebarPropertyListItem icon={LabelPropertyIcon} label={t("common.labels")}>
               <IssueLabel
+                workspaceSlug={workspaceSlug}
+                projectId={projectId}
+                issueId={issueId}
+                disabled={!isEditable}
+              />
+            </SidebarPropertyListItem>
+
+            <SidebarPropertyListItem icon={Mail} label={t("common.requester_email")}>
+              <RequesterEmailInput
                 workspaceSlug={workspaceSlug}
                 projectId={projectId}
                 issueId={issueId}

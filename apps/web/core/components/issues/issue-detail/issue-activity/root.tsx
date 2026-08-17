@@ -24,6 +24,7 @@ import { useProject } from "@/hooks/store/use-project";
 import { IssueEmailLinkService } from "@/services/issue/email_link.service";
 import { IssueGithubSyncStatusService } from "@/services/issue/github_sync_status.service";
 // local imports
+import { getIssueEmailLinkSWRKey } from "../requester-email";
 import { IssueActivityCommentRoot } from "./activity-comment-root";
 import { useWorkItemCommentOperations } from "./helper";
 import { ActivitySortRoot } from "./sort-root";
@@ -82,8 +83,9 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
   const activityOperations = useWorkItemCommentOperations(workspaceSlug, projectId, issueId);
 
   const project = getProjectById(projectId);
-  const { data: emailLink } = useSWR(workspaceSlug && projectId && issueId ? `ISSUE_EMAIL_LINK_${issueId}` : null, () =>
-    issueEmailLinkService.fetchEmailLink(workspaceSlug, projectId, issueId)
+  const { data: emailLink } = useSWR(
+    workspaceSlug && projectId && issueId ? getIssueEmailLinkSWRKey(issueId) : null,
+    () => issueEmailLinkService.fetchEmailLink(workspaceSlug, projectId, issueId)
   );
   const { data: githubSynced } = useSWR(
     workspaceSlug && projectId && issueId ? `ISSUE_GITHUB_SYNC_STATUS_${issueId}` : null,
