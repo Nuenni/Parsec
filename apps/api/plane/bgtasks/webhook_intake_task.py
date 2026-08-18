@@ -15,6 +15,7 @@ Userback's built-in webhook "Test" feature before extending this.
 """
 
 import json
+from urllib.parse import urlsplit
 
 # Django imports
 from django.utils import timezone
@@ -59,9 +60,12 @@ USERBACK_PRIORITY_MAP = {
 # feedback_type already carries the widget's "Select" choice (confirmed from real payloads
 # 2026-08-18: "Bug" for "Something broken?", "Idea" for "A feature you'd like to see?" - on
 # both the contact widget and the dedicated Idea Board - "Feedback" for "Something else?"/no
-# selection). Map the ones worth triaging on to a label; leave the generic "Feedback" case
-# unlabeled.
-FEEDBACK_TYPE_LABEL_MAP = {"bug": ("Bug", "#EB5757"), "idea": ("Feature Request", "#26B5CE")}
+# selection).
+FEEDBACK_TYPE_LABEL_MAP = {
+    "bug": ("Bug", "#EB5757"),
+    "idea": ("Feature Request", "#26B5CE"),
+    "feedback": ("General", "#6366F1"),
+}
 
 
 def _get_webhook_intake_bot_user():
@@ -121,6 +125,13 @@ def _safe_url(value):
     return value if value.lower().startswith(("http://", "https://")) else None
 
 
+_IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg")
+
+
+def _is_image_url(url):
+    return urlsplit(url).path.lower().endswith(_IMAGE_EXTENSIONS)
+
+
 def _extract_media_urls(value):
     """`screenshot` shape is unconfirmed (docs only show one bare example payload) - it's
     been observed as a list, so defensively handle a bare string, a list of strings, and a
@@ -165,14 +176,20 @@ def _feedback_description_html(data):
         rows.append(f'<li><a href="{escape(share_url)}">View in Userback</a></li>')
 
     attachment_url = _safe_url(data.get("attachment"))
+    attachment_image_url = None
     if attachment_url:
-        rows.append(f'<li><a href="{escape(attachment_url)}">Attachment</a></li>')
+        if _is_image_url(attachment_url):
+            attachment_image_url = attachment_url
+        else:
+            rows.append(f'<li><a href="{escape(attachment_url)}">Attachment</a></li>')
 
     if rows:
         parts.append(f"<ul>{''.join(rows)}</ul>")
 
-    screenshot_urls = [url for raw in _extract_media_urls(data.get("screenshot")) if (url := _safe_url(raw))]
-    for url in screenshot_urls:
+    image_urls = [url for raw in _extract_media_urls(data.get("screenshot")) if (url := _safe_url(raw))]
+    if attachment_image_url:
+        image_urls.append(attachment_image_url)
+    for url in image_urls:
         parts.append(f'<p><img src="{escape(url)}" /></p>')
 
     return "".join(parts) if parts else "<p>No further details provided.</p>"
