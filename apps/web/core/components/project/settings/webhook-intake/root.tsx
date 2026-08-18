@@ -93,8 +93,14 @@ export function WebhookIntakeSettingsRoot(props: Props) {
   }
 
   const userbackConfig = configs.find((config) => config.source === "USERBACK");
+  // API_BASE_URL is often "" in production (same-origin API), which would paste a
+  // useless relative path into Userback's webhook field - always resolve to an
+  // absolute URL, the same way invite links do.
   const webhookUrl = userbackConfig
-    ? `${API_BASE_URL}/api/v1/hooks/webhook-intake/${projectId}/${userbackConfig.webhook_token}/`
+    ? new URL(
+        `${API_BASE_URL}/api/v1/hooks/webhook-intake/${projectId}/${userbackConfig.webhook_token}/`,
+        typeof window !== "undefined" ? window.location.origin : undefined
+      ).href
     : null;
 
   return (
