@@ -31,6 +31,8 @@ from plane.db.models import (
     Issue,
     IssueAssignee,
     IssueComment,
+    IssueLabel,
+    Label,
     ProjectMember,
     State,
     User,
@@ -53,6 +55,13 @@ USERBACK_PRIORITY_MAP = {
     # Confirmed from real production payloads (2026-08-18), not in Userback's docs.
     "neutral": "none",
 }
+
+# feedback_type already carries the widget's "Select" choice (confirmed from real payloads
+# 2026-08-18: "Bug" for "Something broken?", "Idea" for "A feature you'd like to see?" - on
+# both the contact widget and the dedicated Idea Board - "Feedback" for "Something else?"/no
+# selection). Map the ones worth triaging on to a label; leave the generic "Feedback" case
+# unlabeled.
+FEEDBACK_TYPE_LABEL_MAP = {"bug": ("Bug", "#EB5757"), "idea": ("Feature Request", "#26B5CE")}
 
 
 def _get_webhook_intake_bot_user():
@@ -78,6 +87,10 @@ def _map_priority(value):
 def _extract_assignee_email(data):
     assignee = data.get("assignee")
     return assignee.get("email") if isinstance(assignee, dict) else None
+
+
+def _label_for_feedback_type(feedback_type):
+    return FEEDBACK_TYPE_LABEL_MAP.get(str(feedback_type or "").strip().lower())
 
 
 def _find_member(project_id, email):
@@ -200,6 +213,28 @@ def _create_issue_from_feedback(config, data):
             issue=issue,
             source=config.source,
             extra={"external_feedback_id": data.get("id")},
+        )
+
+    label_match = _label_for_feedback_type(data.get("feedback_type"))
+    if label_match is not None:
+        label_name, label_color = label_match
+        label, _ = Label.objects.get_or_create(
+            project_id=config.project_id,
+            name=label_name,
+            defaults={
+                "workspace_id": config.workspace_id,
+                "color": label_color,
+                "created_by": bot,
+                "updated_by": bot,
+            },
+        )
+        IssueLabel.objects.create(
+            issue=issue,
+            label=label,
+            project_id=config.project_id,
+            workspace_id=config.workspace_id,
+            created_by=bot,
+            updated_by=bot,
         )
 
     # all_objects: a soft-deleted link for this (project, source, external_feedback_id)
