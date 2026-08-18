@@ -350,6 +350,11 @@ export const coreRoutes: RouteConfigEntry[] = [
               ":workspaceSlug/settings/projects/:projectId/email-intake",
               "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/email-intake/page.tsx"
             ),
+            // Project Webhook Intake (Userback etc.)
+            route(
+              ":workspaceSlug/settings/projects/:projectId/webhook-intake",
+              "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/webhook-intake/page.tsx"
+            ),
           ]),
         ]),
       ]),

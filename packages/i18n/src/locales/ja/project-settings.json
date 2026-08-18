@@ -176,6 +176,11 @@
       "current": "現在の見積もりシステム",
       "select": "見積もりシステムを選択"
     },
+    "webhook_intake": {
+      "label": "Webhook受信",
+      "heading": "Webhook受信",
+      "description": "サードパーティツール(例: Userback)からの受信Webhookを受け取り、そのイベントをここで作業項目に変換します。"
+    },
     "automations": {
       "label": "自動化",
       "heading": "自動化",

@@ -176,6 +176,11 @@
       "current": "Mevcut estimasyon sistemi",
       "select": "Estimasyon sistemi seç"
     },
+    "webhook_intake": {
+      "label": "Webhook Alımı",
+      "heading": "Webhook Alımı",
+      "description": "Üçüncü taraf bir araçtan (örn. Userback) gelen webhook'u alın ve olaylarını burada iş öğelerine dönüştürün."
+    },
     "automations": {
       "label": "Otomasyonlar",
       "heading": "Otomasyonlar",

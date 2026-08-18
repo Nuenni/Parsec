@@ -186,6 +186,11 @@
       "heading": "Email Support",
       "description": "Poll a support mailbox over IMAP to create issues from incoming emails, and reply to requesters over SMTP."
     },
+    "webhook_intake": {
+      "label": "Webhook Intake",
+      "heading": "Webhook Intake",
+      "description": "Receive an inbound webhook from a third-party tool (e.g. Userback) and turn its events into work items here."
+    },
     "automations": {
       "label": "Automations",
       "heading": "Automations",

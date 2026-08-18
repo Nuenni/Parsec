@@ -176,6 +176,11 @@
       "current": "Aktuálny systém odhadov",
       "select": "Vyberte systém odhadov"
     },
+    "webhook_intake": {
+      "label": "Príjem webhooku",
+      "heading": "Príjem webhooku",
+      "description": "Prijímajte prichádzajúci webhook z externého nástroja (napr. Userback) a premeňte jeho udalosti tu na pracovné položky."
+    },
     "automations": {
       "label": "Automatizácie",
       "heading": "Automatizácie",

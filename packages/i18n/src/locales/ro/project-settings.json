@@ -176,6 +176,11 @@
       "current": "Sistemul de estimări curent",
       "select": "Selectează un sistem de estimări"
     },
+    "webhook_intake": {
+      "label": "Recepție webhook",
+      "heading": "Recepție webhook",
+      "description": "Primește un webhook de intrare de la un instrument terț (de ex. Userback) și transformă evenimentele acestuia în elemente de lucru aici."
+    },
     "automations": {
       "label": "Automatizări",
       "heading": "Automatizări",

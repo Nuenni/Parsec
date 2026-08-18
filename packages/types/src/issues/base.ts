@@ -12,6 +12,7 @@ export * from "./github_pull_request";
 export * from "./github_commit";
 export * from "./github_project_link";
 export * from "./email_intake_config";
+export * from "./webhook_intake_config";
 export * from "./issue_attachment";
 export * from "./issue_relation";
 export * from "./issue_sub_issues";

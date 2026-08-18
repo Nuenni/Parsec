@@ -176,6 +176,11 @@
       "current": "현재 견적 시스템",
       "select": "견적 시스템 선택"
     },
+    "webhook_intake": {
+      "label": "웹훅 수신",
+      "heading": "웹훅 수신",
+      "description": "서드파티 도구(예: Userback)에서 들어오는 웹훅을 수신하여 이벤트를 여기에서 작업 항목으로 변환합니다."
+    },
     "automations": {
       "label": "자동화",
       "heading": "자동화",

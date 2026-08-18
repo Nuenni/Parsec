@@ -176,6 +176,11 @@
       "current": "Aktuelles Schätzsystem",
       "select": "Wählen Sie ein Schätzsystem"
     },
+    "webhook_intake": {
+      "label": "Webhook-Empfang",
+      "heading": "Webhook-Empfang",
+      "description": "Empfangen Sie einen eingehenden Webhook von einem Drittanbieter-Tool (z. B. Userback) und wandeln Sie dessen Ereignisse hier automatisch in Arbeitselemente um."
+    },
     "automations": {
       "label": "Automatisierungen",
       "heading": "Automatisierungen",

@@ -15,6 +15,7 @@ from .user import urlpatterns as user_patterns
 from .work_item import urlpatterns as work_item_patterns
 from .invite import urlpatterns as invite_patterns
 from .sticky import urlpatterns as sticky_patterns
+from .webhook_intake import urlpatterns as webhook_intake_patterns
 
 urlpatterns = [
     *asset_patterns,
@@ -30,4 +31,5 @@ urlpatterns = [
     *work_item_patterns,
     *invite_patterns,
     *sticky_patterns,
+    *webhook_intake_patterns,
 ]

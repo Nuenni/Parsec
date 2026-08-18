@@ -176,6 +176,11 @@
       "current": "Hệ thống ước tính hiện tại",
       "select": "Chọn hệ thống ước tính"
     },
+    "webhook_intake": {
+      "label": "Nhận Webhook",
+      "heading": "Nhận Webhook",
+      "description": "Nhận webhook đến từ một công cụ bên thứ ba (ví dụ: Userback) và chuyển các sự kiện của nó thành mục công việc tại đây."
+    },
     "automations": {
       "label": "Tự động hóa",
       "heading": "Tự động hóa",

@@ -176,6 +176,11 @@
       "current": "Système d'estimation actuel",
       "select": "Sélectionner un système d'estimation"
     },
+    "webhook_intake": {
+      "label": "Réception de webhook",
+      "heading": "Réception de webhook",
+      "description": "Recevez un webhook entrant depuis un outil tiers (par ex. Userback) et transformez ses événements en éléments de travail ici."
+    },
     "automations": {
       "label": "Automatisations",
       "heading": "Automatisations",

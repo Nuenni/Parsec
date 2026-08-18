@@ -176,6 +176,11 @@
       "current": "Obecny system szacowania",
       "select": "Wybierz system szacowania"
     },
+    "webhook_intake": {
+      "label": "Odbiór webhooka",
+      "heading": "Odbiór webhooka",
+      "description": "Odbieraj przychodzący webhook z zewnętrznego narzędzia (np. Userback) i zamieniaj jego zdarzenia w elementy pracy tutaj."
+    },
     "automations": {
       "label": "Automatyzacja",
       "heading": "Automatyzacje",

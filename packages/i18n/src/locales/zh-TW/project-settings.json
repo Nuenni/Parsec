@@ -176,6 +176,11 @@
       "current": "目前估算系統",
       "select": "選擇估算系統"
     },
+    "webhook_intake": {
+      "label": "Webhook 接入",
+      "heading": "Webhook 接入",
+      "description": "接收來自第三方工具(例如 Userback)的傳入 Webhook,並在此將其事件轉換為工作項目。"
+    },
     "automations": {
       "label": "自動化",
       "heading": "自動化",
