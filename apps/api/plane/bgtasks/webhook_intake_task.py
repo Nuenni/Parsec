@@ -18,6 +18,7 @@ import json
 
 # Django imports
 from django.utils import timezone
+from django.utils.html import escape
 
 # Third party imports
 from celery import shared_task
@@ -30,6 +31,8 @@ from plane.db.models import (
     Issue,
     IssueAssignee,
     IssueComment,
+    IssueLabel,
+    Label,
     ProjectMember,
     State,
     User,
@@ -44,7 +47,21 @@ WEBHOOK_INTAKE_BOT_EMAIL = "webhook-intake@parsec.internal"
 # Userback sends priority as a capitalized word ("Urgent") per its one documented
 # example; Plane's Issue.priority choices are lowercase. Unrecognized/missing values
 # fall back to "none" rather than guessing.
-USERBACK_PRIORITY_MAP = {"urgent": "urgent", "high": "high", "medium": "medium", "low": "low"}
+USERBACK_PRIORITY_MAP = {
+    "urgent": "urgent",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+    # Confirmed from real production payloads (2026-08-18), not in Userback's docs.
+    "neutral": "none",
+}
+
+# feedback_type already carries the widget's "Select" choice (confirmed from real payloads
+# 2026-08-18: "Bug" for "Something broken?", "Idea" for "A feature you'd like to see?" - on
+# both the contact widget and the dedicated Idea Board - "Feedback" for "Something else?"/no
+# selection). Map the ones worth triaging on to a label; leave the generic "Feedback" case
+# unlabeled.
+FEEDBACK_TYPE_LABEL_MAP = {"bug": ("Bug", "#EB5757"), "idea": ("Feature Request", "#26B5CE")}
 
 
 def _get_webhook_intake_bot_user():
@@ -72,6 +89,10 @@ def _extract_assignee_email(data):
     return assignee.get("email") if isinstance(assignee, dict) else None
 
 
+def _label_for_feedback_type(feedback_type):
+    return FEEDBACK_TYPE_LABEL_MAP.get(str(feedback_type or "").strip().lower())
+
+
 def _find_member(project_id, email):
     if not email:
         return None
@@ -83,13 +104,49 @@ def _find_member(project_id, email):
 
 
 def _feedback_title(data):
+    title = data.get("title")
+    if title and str(title).strip():
+        return str(title).strip()[:255]
     feedback_type = data.get("feedback_type") or "Feedback"
     page = data.get("page") or data.get("url") or ""
     title = f"{feedback_type}: {page}" if page else feedback_type
     return title[:255] or "New feedback"
 
 
+def _safe_url(value):
+    """Only accept http(s) URLs - guards against javascript: hrefs from an untrusted payload."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    return value if value.lower().startswith(("http://", "https://")) else None
+
+
+def _extract_media_urls(value):
+    """`screenshot` shape is unconfirmed (docs only show one bare example payload) - it's
+    been observed as a list, so defensively handle a bare string, a list of strings, and a
+    list of dicts under a few plausible key names."""
+    if not value:
+        return []
+    items = value if isinstance(value, list) else [value]
+    urls = []
+    for item in items:
+        if isinstance(item, str):
+            urls.append(item)
+        elif isinstance(item, dict):
+            for key in ("url", "image", "src", "screenshot_url", "file", "path"):
+                if item.get(key):
+                    urls.append(item[key])
+                    break
+    return urls
+
+
 def _feedback_description_html(data):
+    parts = []
+
+    description = data.get("description")
+    if description and str(description).strip():
+        parts.append(f"<p>{escape(str(description).strip())}</p>")
+
     rows = []
     for label, key in [
         ("Reporter", "email"),
@@ -101,11 +158,24 @@ def _feedback_description_html(data):
     ]:
         value = data.get(key)
         if value:
-            rows.append(f"<li><strong>{label}:</strong> {value}</li>")
-    share_url = data.get("share_url") or data.get("feedback_url")
+            rows.append(f"<li><strong>{label}:</strong> {escape(str(value))}</li>")
+
+    share_url = _safe_url(data.get("share_url") or data.get("feedback_url"))
     if share_url:
-        rows.append(f'<li><a href="{share_url}">View in Userback</a></li>')
-    return f"<ul>{''.join(rows)}</ul>" if rows else "<p>No further details provided.</p>"
+        rows.append(f'<li><a href="{escape(share_url)}">View in Userback</a></li>')
+
+    attachment_url = _safe_url(data.get("attachment"))
+    if attachment_url:
+        rows.append(f'<li><a href="{escape(attachment_url)}">Attachment</a></li>')
+
+    if rows:
+        parts.append(f"<ul>{''.join(rows)}</ul>")
+
+    screenshot_urls = [url for raw in _extract_media_urls(data.get("screenshot")) if (url := _safe_url(raw))]
+    for url in screenshot_urls:
+        parts.append(f'<p><img src="{escape(url)}" /></p>')
+
+    return "".join(parts) if parts else "<p>No further details provided.</p>"
 
 
 def _create_issue_from_feedback(config, data):
@@ -143,6 +213,28 @@ def _create_issue_from_feedback(config, data):
             issue=issue,
             source=config.source,
             extra={"external_feedback_id": data.get("id")},
+        )
+
+    label_match = _label_for_feedback_type(data.get("feedback_type"))
+    if label_match is not None:
+        label_name, label_color = label_match
+        label, _ = Label.objects.get_or_create(
+            project_id=config.project_id,
+            name=label_name,
+            defaults={
+                "workspace_id": config.workspace_id,
+                "color": label_color,
+                "created_by": bot,
+                "updated_by": bot,
+            },
+        )
+        IssueLabel.objects.create(
+            issue=issue,
+            label=label,
+            project_id=config.project_id,
+            workspace_id=config.workspace_id,
+            created_by=bot,
+            updated_by=bot,
         )
 
     # all_objects: a soft-deleted link for this (project, source, external_feedback_id)
