@@ -176,6 +176,11 @@
       "current": "Sistema di stime attuale",
       "select": "Seleziona un sistema di stime"
     },
+    "webhook_intake": {
+      "label": "Ricezione webhook",
+      "heading": "Ricezione webhook",
+      "description": "Ricevi un webhook in entrata da uno strumento di terze parti (ad es. Userback) e trasforma i suoi eventi in elementi di lavoro qui."
+    },
     "automations": {
       "label": "Automatizzazioni",
       "heading": "Automazioni",

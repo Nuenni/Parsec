@@ -246,3 +246,4 @@ from .github.commit import IssueGithubCommitsEndpoint
 from .github.project_link import GithubProjectLinkViewSet
 from .github.sync_status import IssueGithubSyncStatusEndpoint
 from .email_intake import EmailIntakeConfigViewSet, IssueEmailLinkEndpoint
+from .webhook_intake import WebhookIntakeConfigViewSet

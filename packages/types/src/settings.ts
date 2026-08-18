@@ -32,7 +32,8 @@ export type TProjectSettingsTabs =
   | "estimates"
   | "automations"
   | "github"
-  | "email_intake";
+  | "email_intake"
+  | "webhook_intake";
 export type TProjectSettingsItem = {
   key: TProjectSettingsTabs;
   i18n_label: string;

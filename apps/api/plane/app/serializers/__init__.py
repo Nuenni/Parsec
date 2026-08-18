@@ -142,3 +142,4 @@ from .github_integration import (
     GithubProjectLinkSerializer,
 )
 from .email_intake import EmailIntakeConfigSerializer, EmailIssueLinkCreateSerializer
+from .webhook_intake import WebhookIntakeConfigSerializer

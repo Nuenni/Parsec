@@ -66,6 +66,7 @@ from .intake import (
 )
 
 from .email_intake import EmailIssueLinkAPIEndpoint
+from .webhook_intake import WebhookIntakeEndpoint
 
 from .asset import UserAssetEndpoint, UserServerAssetEndpoint, GenericAssetEndpoint
 

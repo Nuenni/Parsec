@@ -21,6 +21,7 @@ from .state import urlpatterns as state_urls
 from .user import urlpatterns as user_urls
 from .views import urlpatterns as view_urls
 from .webhook import urlpatterns as webhook_urls
+from .webhook_intake import urlpatterns as webhook_intake_urls
 from .workspace import urlpatterns as workspace_urls
 from .timezone import urlpatterns as timezone_urls
 from .exporter import urlpatterns as exporter_urls
@@ -46,6 +47,7 @@ urlpatterns = [
     *workspace_urls,
     *api_urls,
     *webhook_urls,
+    *webhook_intake_urls,
     *timezone_urls,
     *exporter_urls,
 ]

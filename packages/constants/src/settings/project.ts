@@ -121,6 +121,13 @@ export const PROJECT_SETTINGS: Record<TProjectSettingsTabs, TProjectSettingsItem
     access: [EUserProjectRoles.ADMIN],
     highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/email-intake/`,
   },
+  webhook_intake: {
+    key: "webhook_intake",
+    i18n_label: "project_settings.webhook_intake.label",
+    href: `/webhook-intake`,
+    access: [EUserProjectRoles.ADMIN],
+    highlight: (pathname: string, baseUrl: string) => pathname === `${baseUrl}/webhook-intake/`,
+  },
 };
 
 export const PROJECT_SETTINGS_FLAT_MAP: TProjectSettingsItem[] = Object.values(PROJECT_SETTINGS);
@@ -143,5 +150,6 @@ export const GROUPED_PROJECT_SETTINGS: Record<PROJECT_SETTINGS_CATEGORY, TProjec
     PROJECT_SETTINGS["automations"],
     PROJECT_SETTINGS["github"],
     PROJECT_SETTINGS["email_intake"],
+    PROJECT_SETTINGS["webhook_intake"],
   ],
 };

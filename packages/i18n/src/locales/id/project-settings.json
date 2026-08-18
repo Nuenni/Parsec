@@ -176,6 +176,11 @@
       "current": "Sistem estimasi saat ini",
       "select": "Pilih sistem estimasi"
     },
+    "webhook_intake": {
+      "label": "Penerimaan Webhook",
+      "heading": "Penerimaan Webhook",
+      "description": "Terima webhook masuk dari alat pihak ketiga (mis. Userback) dan ubah peristiwanya menjadi item kerja di sini."
+    },
     "automations": {
       "label": "Otomatisasi",
       "heading": "Otomatisasi",
