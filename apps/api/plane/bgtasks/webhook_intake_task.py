@@ -256,11 +256,11 @@ def _sync_comment(link, config, action, comment_data):
         )
         return
 
-    plane_comment_id = link.external_comment_ids.get(external_comment_id)
-    if plane_comment_id is None:
+    internal_comment_id = link.external_comment_ids.get(external_comment_id)
+    if internal_comment_id is None:
         log_exception(Exception(f"No tracked comment for external id {external_comment_id}, ignoring {action}"))
         return
-    comment = IssueComment.objects.filter(id=plane_comment_id).first()
+    comment = IssueComment.objects.filter(id=internal_comment_id).first()
     if comment is None:
         return
 
