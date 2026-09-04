@@ -4,14 +4,18 @@
 
 # Python imports
 import email
+import html as _html
 import imaplib
+import io
 import json
 import re
+import uuid
 from email.header import decode_header
 from email.utils import formataddr, parseaddr
 
 # Django imports
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -26,6 +30,7 @@ from plane.bgtasks.issue_activities_task import issue_activity
 from plane.db.models import (
     EmailIntakeConfig,
     EmailIssueLink,
+    FileAsset,
     Intake,
     IntakeIssue,
     Issue,
@@ -90,7 +95,7 @@ def _extract_plain_text_body(msg):
     if msg.is_multipart():
         text_part = None
         html_part = None
-        for part in msg.walk():
+        for part in _walk_outside_attached_messages(msg):
             content_type = part.get_content_type()
             if part.get_content_disposition() == "attachment":
                 continue
@@ -110,6 +115,133 @@ def _extract_plain_text_body(msg):
         charset = msg.get_content_charset() or "utf-8"
         body = payload.decode(charset, errors="replace")
         return _html_to_text(body) if msg.get_content_type() == "text/html" else body
+
+
+def _walk_outside_attached_messages(msg):
+    """Like msg.walk(), but does not descend into attached messages.
+
+    A forwarded conversation arrives as message/rfc822 parts, each with its own
+    text body. msg.walk() would yield those inner bodies too, and an outer mail
+    without a text part of its own would then get the attachment's text as its
+    body. The attached messages are handled separately, see _extract_attachments.
+    """
+    yield msg
+    if msg.get_content_type() == "message/rfc822":
+        return
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            yield from _walk_outside_attached_messages(part)
+
+
+def _extract_attachments(msg):
+    """Every MIME part that is a real attachment, as a list of dicts.
+
+    Inline images (Content-ID, no attachment disposition) are left alone, they
+    belong to the HTML body. An attached message (message/rfc822, what mail
+    clients produce when a conversation is forwarded as files) is kept as a file
+    and additionally parsed, so its text can be shown in the work item.
+    """
+    if not msg.is_multipart():
+        return []
+    attachments = []
+    for part in _walk_outside_attached_messages(msg):
+        is_message = part.get_content_type() == "message/rfc822"
+        if part.get_content_disposition() != "attachment" and not is_message:
+            continue
+        if part.is_multipart() and not is_message:
+            continue
+        filename = _decode_mime_header(part.get_filename() or "") or (
+            "attached-message.eml" if is_message else "attachment"
+        )
+        if is_message:
+            inner = part.get_payload()
+            inner = inner[0] if isinstance(inner, list) and inner else None
+            data = inner.as_bytes() if inner is not None else b""
+            message = _summarize_attached_message(inner) if inner is not None else None
+        else:
+            data = part.get_payload(decode=True) or b""
+            message = None
+        attachments.append(
+            {
+                "filename": filename,
+                "content_type": "message/rfc822" if is_message else part.get_content_type(),
+                "data": data,
+                "message": message,
+            }
+        )
+    return attachments
+
+
+def _summarize_attached_message(inner):
+    """Subject, sender, date and body of an attached message, for the work item text."""
+    _name, from_email = parseaddr(_decode_mime_header(inner.get("From", "")))
+    return {
+        "subject": _decode_mime_header(inner.get("Subject", "")),
+        "from": _decode_mime_header(inner.get("From", "")) or from_email,
+        "date": (inner.get("Date") or "").strip(),
+        "body": _extract_plain_text_body(inner).strip(),
+    }
+
+
+def _attached_messages_html(attachments):
+    """The attached messages as quoted blocks under the body, oldest first as
+    they arrived. Everything is escaped; the mail body itself is not, and that
+    is a separate matter."""
+    blocks = []
+    for att in attachments:
+        message = att.get("message")
+        if not message or not (message["body"] or message["subject"]):
+            continue
+        header = " · ".join(x for x in (message["from"], message["date"]) if x)
+        body = _html.escape(message["body"]).replace("\n", "<br />")
+        blocks.append(
+            "<blockquote>"
+            f"<p><strong>{_html.escape(message['subject'] or att['filename'])}</strong>"
+            + (f"<br />{_html.escape(header)}" if header else "")
+            + f"</p><p>{body}</p></blockquote>"
+        )
+    return "".join(blocks)
+
+
+def _store_attachments(issue, attachments, actor):
+    """Files from the mail become issue attachments, uploaded straight into the
+    object store. Over the size limit means a line in the description instead of
+    a file, the limit is the same one the upload endpoint enforces. Returns the
+    HTML for those skipped files, empty when everything fit."""
+    from plane.settings.storage import S3Storage
+    from plane.utils.path_validator import sanitize_filename
+
+    if not attachments:
+        return ""
+    storage = S3Storage()
+    skipped = []
+    for att in attachments:
+        size = len(att["data"])
+        name = sanitize_filename(att["filename"]) or "attachment"
+        if size == 0:
+            continue
+        if size > settings.FILE_SIZE_LIMIT:
+            skipped.append((name, size))
+            continue
+        asset_key = f"{issue.workspace_id}/{uuid.uuid4().hex}-{name}"
+        if not storage.upload_file(io.BytesIO(att["data"]), asset_key, content_type=att["content_type"]):
+            skipped.append((name, size))
+            continue
+        FileAsset.objects.create(
+            attributes={"name": name, "type": att["content_type"], "size": size},
+            asset=asset_key,
+            size=size,
+            workspace_id=issue.workspace_id,
+            created_by=actor,
+            issue_id=issue.id,
+            project_id=issue.project_id,
+            entity_type=FileAsset.EntityTypeContext.ISSUE_ATTACHMENT,
+            is_uploaded=True,
+        )
+    if not skipped:
+        return ""
+    items = "".join(f"<li>{_html.escape(n)} ({s // 1024} KB)</li>" for n, s in skipped)
+    return f"<p>Attachments not stored (over the size limit):</p><ul>{items}</ul>"
 
 
 def _strip_quoted_reply(body):
@@ -140,6 +272,7 @@ def parse_email_message(raw_bytes):
         "in_reply_to": in_reply_to,
         "references": references,
         "body": body,
+        "attachments": _extract_attachments(msg),
     }
 
 
@@ -169,13 +302,17 @@ def process_parsed_email(config, parsed):
 
     existing_link = _find_link_by_message_ids(config.project_id, thread_ids) if thread_ids else None
 
+    attachments = parsed.get("attachments") or []
+
     if existing_link is not None:
+        extra_html = _attached_messages_html(attachments)
+        extra_html += _store_attachments(existing_link.issue, attachments, bot)
         comment = IssueComment.objects.create(
             issue=existing_link.issue,
             project_id=config.project_id,
             workspace_id=config.workspace_id,
             actor=bot,
-            comment_html=f"<p>{parsed['body']}</p>",
+            comment_html=f"<p>{parsed['body']}</p>{extra_html}",
             access="EXTERNAL",
             created_by=bot,
             updated_by=bot,
@@ -215,13 +352,17 @@ def process_parsed_email(config, parsed):
 
     issue = Issue.objects.create(
         name=(parsed["subject"] or "New support request")[:255],
-        description_html=f"<p>{parsed['body']}</p>",
+        description_html=f"<p>{parsed['body']}</p>{_attached_messages_html(attachments)}",
         project_id=config.project_id,
         workspace_id=config.workspace_id,
         state_id=triage_state.id,
         created_by=bot,
         updated_by=bot,
     )
+    skipped_html = _store_attachments(issue, attachments, bot)
+    if skipped_html:
+        issue.description_html += skipped_html
+        issue.save(update_fields=["description_html"])
     IntakeIssue.objects.create(
         intake_id=intake.id,
         project_id=config.project_id,
