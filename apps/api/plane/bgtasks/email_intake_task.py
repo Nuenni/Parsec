@@ -273,7 +273,59 @@ def parse_email_message(raw_bytes):
         "references": references,
         "body": body,
         "attachments": _extract_attachments(msg),
+        "is_automated": _is_automated_sender(msg, from_email),
     }
+
+
+AUTOMATED_LOCAL_PARTS = ("noreply", "no-reply", "no_reply", "donotreply", "mailer-daemon", "postmaster", "bounce")
+
+
+def _is_automated_sender(msg, from_email):
+    """True for mail that a machine sent: out-of-office replies, bounces,
+    list traffic, no-reply addresses. Answering those creates loops, two
+    auto-responders can keep each other busy for days."""
+    auto_submitted = (msg.get("Auto-Submitted") or "").strip().lower()
+    if auto_submitted and auto_submitted != "no":
+        return True
+    if (msg.get("Precedence") or "").strip().lower() in ("bulk", "junk", "list"):
+        return True
+    if msg.get("X-Autoreply") or msg.get("X-Autorespond"):
+        return True
+    local_part = (from_email or "").split("@")[0].lower()
+    return any(local_part.startswith(marker) for marker in AUTOMATED_LOCAL_PARTS)
+
+
+def _send_acknowledgement(config, link, issue, parsed):
+    """The first thing a requester hears back: it arrived, here is the number,
+    reply to this mail to add to it. Sent in the same thread as their mail so
+    their reply lands on the same work item. A failure here is logged and
+    never undoes the work item; the ticket matters more than the receipt."""
+    if parsed.get("is_automated"):
+        return
+    if (parsed.get("from_email") or "").lower() == (config.email_address or "").lower():
+        return
+    ticket = f"{issue.project.identifier}-{issue.sequence_id}"
+    subject = f"Re: {issue.name} [{ticket}]"
+    plain_body = (
+        f"Thank you for your message, we have received it.\n\n"
+        f"Your ticket number is {ticket}. We will get back to you here. "
+        f"To add anything, reply to this email and it goes straight onto the ticket."
+    )
+    html_body = _render_email_html(
+        config,
+        eyebrow="Ticket received",
+        heading=ticket,
+        body_html=(
+            '<p style="margin:0 0 12px;">Thank you for your message, we have received it.</p>'
+            f'<p style="margin:0 0 12px;">Your ticket number is <strong style="color:#f1f5f9;">{ticket}</strong>. '
+            "We will get back to you here.</p>"
+            '<p style="margin:0;">To add anything, reply to this email and it goes straight onto the ticket.</p>'
+        ),
+    )
+    try:
+        _send_threaded_email(config, link, subject, plain_body, html_body=html_body)
+    except Exception as e:
+        log_exception(e)
 
 
 def _get_intake_bot_user():
@@ -382,7 +434,7 @@ def process_parsed_email(config, parsed):
         epoch=int(timezone.now().timestamp()),
         notification=True,
     )
-    EmailIssueLink.objects.create(
+    link = EmailIssueLink.objects.create(
         issue=issue,
         project_id=config.project_id,
         workspace_id=config.workspace_id,
@@ -390,6 +442,7 @@ def process_parsed_email(config, parsed):
         requester_name=parsed["from_name"],
         message_ids=[parsed["message_id"]] if parsed["message_id"] else [],
     )
+    _send_acknowledgement(config, link, issue, parsed)
     return issue
 
 
