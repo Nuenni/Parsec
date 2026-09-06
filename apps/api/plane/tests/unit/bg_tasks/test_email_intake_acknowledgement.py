@@ -89,6 +89,8 @@ def test_acknowledgement_carries_ticket_number_and_threads(monkeypatch):
     assert "SUP-34" in sent["plain"]
     assert "reply to this email" in sent["plain"]
     assert "SUP-34" in sent["html"]
+    # The number sits in the text; the heading greets, it does not repeat it.
+    assert "We're on it!" in sent["html"]
 
 
 @pytest.mark.unit

@@ -314,7 +314,7 @@ def _send_acknowledgement(config, link, issue, parsed):
     html_body = _render_email_html(
         config,
         eyebrow="Ticket received",
-        heading=ticket,
+        heading="We're on it!",
         body_html=(
             '<p style="margin:0 0 12px;">Thank you for your message, we have received it.</p>'
             f'<p style="margin:0 0 12px;">Your ticket number is <strong style="color:#f1f5f9;">{ticket}</strong>. '
