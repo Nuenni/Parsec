@@ -26,4 +26,4 @@ export const WEB_URL = encodeURI(`${WEB_BASE_URL}${WEB_BASE_PATH}`);
 // plane website url
 export const WEBSITE_URL = process.env.VITE_WEBSITE_URL || "https://github.com/Nuenni/Parsec";
 // support email
-export const SUPPORT_EMAIL = process.env.VITE_SUPPORT_EMAIL || "support@plane.so";
+export const SUPPORT_EMAIL = process.env.VITE_SUPPORT_EMAIL || "team@nafdo.de";

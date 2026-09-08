@@ -10,6 +10,7 @@ import appleTouchIcon from "@/app/assets/favicon/apple-touch-icon.png?url";
 import siteWebmanifest from "@/app/assets/favicon/site.webmanifest?url";
 import parsecMark from "@/app/assets/images/parsec-mark.svg?url";
 import { LogoSpinner } from "@/components/common/logo-spinner";
+import { getPublicOrigin } from "@/helpers/origin.helper";
 import globalStyles from "@/styles/globals.css?url";
 // types
 import type { Route } from "./+types/root";
@@ -26,7 +27,11 @@ import "@fontsource/material-symbols-rounded";
 import "@fontsource/ibm-plex-mono";
 
 const APP_TITLE = "Parsec Publish | Make your Parsec boards public with one-click";
-const APP_DESCRIPTION = "Parsec Publish is a customer feedback management tool built on top of plane.so";
+const APP_DESCRIPTION = "Parsec Publish makes your Parsec boards and roadmaps public with a single click";
+
+export function loader({ request }: Route.LoaderArgs) {
+  return { origin: getPublicOrigin(request) };
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "apple-touch-icon", sizes: "180x180", href: appleTouchIcon },
@@ -68,12 +73,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const meta: Route.MetaFunction = () => [
+export const meta: Route.MetaFunction = ({ data, location }) => [
   { title: APP_TITLE },
   { name: "description", content: APP_DESCRIPTION },
   { property: "og:title", content: APP_TITLE },
   { property: "og:description", content: APP_DESCRIPTION },
-  { property: "og:url", content: "https://sites.plane.so/" },
+  ...(data?.origin ? [{ property: "og:url", content: `${data.origin}${location.pathname}` }] : []),
   {
     name: "keywords",
     content:

@@ -15,6 +15,7 @@ import { SomethingWentWrongError } from "@/components/issues/issue-layouts/error
 import { IssuesNavbarRoot } from "@/components/issues/navbar";
 // hooks
 import { PageNotFound } from "@/components/ui/not-found";
+import { getPublicOrigin } from "@/helpers/origin.helper";
 import { usePublish, usePublishList } from "@/hooks/store/publish";
 import { useIssueFilter } from "@/hooks/store/use-issue-filter";
 import type { Route } from "./+types/layout";
@@ -29,27 +30,29 @@ interface IssueMetadata {
 }
 
 // Loader function runs on the server and fetches metadata
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params, request }: Route.LoaderArgs) {
   const { anchor } = params;
+  const origin = getPublicOrigin(request);
+  const boardUrl = `${origin}${new URL(request.url).pathname}`;
 
   // Validate anchor before using in request (only allow alphanumeric, -, _)
   const ANCHOR_REGEX = /^[a-zA-Z0-9_-]+$/;
   if (!ANCHOR_REGEX.test(anchor)) {
-    return { metadata: null };
+    return { metadata: null, origin, boardUrl };
   }
 
   try {
     const response = await fetch(`${process.env.VITE_API_BASE_URL}/api/public/anchor/${anchor}/meta/`);
 
     if (!response.ok) {
-      return { metadata: null };
+      return { metadata: null, origin, boardUrl };
     }
 
     const metadata: IssueMetadata = await response.json();
-    return { metadata };
+    return { metadata, origin, boardUrl };
   } catch (error) {
     console.error("Error fetching issue metadata:", error);
-    return { metadata: null };
+    return { metadata: null, origin, boardUrl };
   }
 }
 
@@ -59,7 +62,10 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
   const title = metadata?.name || DEFAULT_TITLE;
   const description = metadata?.description || DEFAULT_DESCRIPTION;
-  const coverImage = metadata?.cover_image;
+  const origin = loaderData?.origin;
+  // A relative cover image would not resolve for an external crawler.
+  const coverImage =
+    metadata?.cover_image && origin ? new URL(metadata.cover_image, origin).href : metadata?.cover_image;
 
   const metaTags = [
     { title },
@@ -68,6 +74,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
+    ...(loaderData?.boardUrl ? [{ property: "og:url", content: loaderData.boardUrl }] : []),
     // Twitter metadata
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
