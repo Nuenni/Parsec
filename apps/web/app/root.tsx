@@ -103,7 +103,8 @@ export const meta: Route.MetaFunction = () => [
     property: "og:description",
     content: "Open-source project management tool to manage work items, cycles, and product roadmaps easily",
   },
-  { property: "og:url", content: "https://app.plane.so/" },
+  // Client-only build, so the deployed domain is only knowable once the browser has it.
+  ...(typeof window === "undefined" ? [] : [{ property: "og:url", content: window.location.origin }]),
   { property: "og:image", content: ogImage },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },

@@ -62,7 +62,8 @@ export const meta: Route.MetaFunction = () => [
   { name: "description", content: APP_DESCRIPTION },
   { property: "og:title", content: APP_TITLE },
   { property: "og:description", content: APP_DESCRIPTION },
-  { property: "og:url", content: "https://plane.so/" },
+  // Client-only build, so the deployed domain is only knowable once the browser has it.
+  ...(typeof window === "undefined" ? [] : [{ property: "og:url", content: window.location.origin }]),
   {
     name: "keywords",
     content:
