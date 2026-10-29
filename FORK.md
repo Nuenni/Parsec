@@ -11,6 +11,8 @@ changes:
   logo, favicon, Apple and PWA icons, the app name (`APP_NAME`), and the
   name in emails, the API title, the GitHub link comment and the passkey
   name. Brand sources are in `assets/parsec/`.
+- `publish-images.yml` lowercases the repository name for the GHCR image
+  names (`ghcr.io/nuenni/parsec-api`, `-web`, `-worker`, `-bot`).
 
 The complete source code of the running instance lives in this repository.
 
@@ -32,6 +34,14 @@ closes it.
 - `parsec-main`: the default branch and the code that runs. Our changes
   go in here through pull requests.
 - `main`: a mirror of upstream `main`, kept for comparison. No own commits.
+
+## Releases and images
+
+A Parsec release is a tag on `parsec-main` named after the upstream release
+it is based on, e.g. `v1.9.0-parsec.1`. Run the "Publish images" workflow
+with that tag. Coolify runs the images with `VERSION` set to the version
+without the `v` (`1.9.0-parsec.1`). Prerelease-style tags do not move
+`latest`.
 
 ## Working with upstream
 
