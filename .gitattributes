@@ -9,3 +9,14 @@ packages/db/src/schema/auth.ts linguist-generated=true
 *.ico binary
 *.woff binary
 *.woff2 binary
+
+# Parsec branding: always keep our version on a merge conflict with upstream
+# (requires `git config merge.ours.driver true` locally, see FORK.md). Only
+# brand assets and the README, never code files: merge=ours discards the
+# entire file on either side.
+README.md merge=ours
+apps/web/src/app/icon.svg merge=ours
+apps/web/src/app/apple-icon.png merge=ours
+apps/web/public/icon-192.png merge=ours
+apps/web/public/icon-512.png merge=ours
+apps/web/public/icon-maskable-512.png merge=ours
