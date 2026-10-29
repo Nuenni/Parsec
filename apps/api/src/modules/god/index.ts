@@ -225,6 +225,8 @@ export const godRoutes = new Elysia({ name: 'god', detail: { tags: ['God'] } })
 
       const body = emailBody(
         'This test confirms that Parsec can send email through the configured provider.',
+        null,
+        { heading: 'Parsec email test' },
       );
       const result = await sendEmail(
         { ...config, smtp: { ...config.smtp, timeout: config.smtp.timeout ?? 15 } },
