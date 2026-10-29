@@ -605,6 +605,7 @@ function createAuth() {
           subject: 'Reset your password',
           text: 'Use the link below to set a new password. Ignore this email if you did not ask for it.',
           url: withPublicOrigin(url),
+          action: 'Reset password',
         });
       },
     },
@@ -622,6 +623,7 @@ function createAuth() {
           subject: 'Confirm your email address',
           text: 'Use the link below to confirm this address and finish signing up.',
           url: withPublicOrigin(url),
+          action: 'Confirm email address',
         });
       },
     },
@@ -914,6 +916,7 @@ function createAuth() {
             subject: 'Your sign-in link',
             text: 'Use the link below to sign in. It works once and expires shortly.',
             url: withPublicOrigin(url),
+            action: 'Sign in',
           });
         },
       }),

@@ -255,7 +255,8 @@ describe('invites', () => {
       expect(res.status).toBe(201);
       expect(res.data?.emailQueued).toBe(true);
       const sent = received.find((m) => m.to.some((to) => to.includes('newcomer@example.com')));
-      expect(sent?.body).toContain(`/invite/${res.data!.token}`);
+      // The raw message is quoted-printable: undo its soft line breaks first.
+      expect(sent?.body.replace(/=\r?\n/g, '')).toContain(`/invite/${res.data!.token}`);
     });
 
     it('still creates the link when no email provider is configured', async () => {

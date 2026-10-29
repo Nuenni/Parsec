@@ -261,11 +261,69 @@ function escape(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+export interface EmailLayout {
+  heading?: string;
+  action?: string;
+}
+
+const FONT = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const CODE =
+  "display: inline-block; font-family: 'Courier New', Courier, monospace; font-size: 12px; " +
+  'background-color: #f3f3f3; padding: 4px 6px; border-radius: 3px; border: 1px solid #e9e9e9; ' +
+  'word-break: break-all;';
+
+// The logo is served by the web app the link points to; a message without a link
+// shows the name instead.
+function logoUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return `${new URL(url).origin}/parsec-email-logo.png`;
+  } catch {
+    return null;
+  }
+}
+
+function card(content: string, style: string): string {
+  return `<table role="presentation" width="100%"><tr><td></td><td width="620" style="width: 620px; max-width: 620px;"><table role="presentation" width="100%" style="${style}"><tr><td style="padding: 24px;">${content}</td></tr></table></td><td></td></tr></table>`;
+}
+
 // Wraps a plain-text body (and an optional link) into the text/html pair the
 // transport needs. Shared so every message in the app looks the same.
-export function emailBody(text: string, url?: string | null): { text: string; html: string } {
+export function emailBody(
+  text: string,
+  url?: string | null,
+  layout: EmailLayout = {},
+): { text: string; html: string } {
   const plain = url ? `${text}\n\n${url}` : text;
-  const body = escape(text).replace(/\n/g, '<br>');
-  const link = url ? `<p><a href="${escape(url)}">${escape(url)}</a></p>` : '';
-  return { text: plain, html: `<p>${body}</p>${link}` };
+  const logo = logoUrl(url);
+  const brand = logo
+    ? `<img src="${escape(logo)}" width="120" alt="Parsec" style="display: block; margin: 0 auto; height: auto;" />`
+    : '<span style="color: #ffffff; font-size: 22px; font-weight: 600;">Parsec</span>';
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => `<p style="margin: 0 0 16px;">${escape(p).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+  const heading = layout.heading
+    ? `<h1 style="margin: 0 0 12px; font-size: 22px; line-height: 1.35; font-weight: 600; color: #111111;">${escape(layout.heading)}</h1>`
+    : '';
+  const link = url
+    ? `<table role="presentation" style="margin: 8px 0 24px;"><tr><td><a href="${escape(url)}" target="_blank" style="background-color: #4f46e5; border-radius: 6px; color: #ffffff; padding: 12px 24px; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 500;">${escape(layout.action ?? 'Open in Parsec')}</a></td></tr></table>` +
+      '<p style="margin: 0; font-size: 13px; line-height: 1.6; color: #5f5e5e;">If the button does not work, copy this link into your browser:</p>' +
+      `<p style="margin: 6px 0 0; font-size: 13px; line-height: 1.6;"><span style="${CODE}">${escape(url)}</span></p>`
+    : '';
+  const html =
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>' +
+    `<body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: ${FONT}; color: #474747; -webkit-font-smoothing: antialiased;">` +
+    '<center style="width: 100%; background-color: #f9f9f9; padding: 40px 0;">' +
+    card(`<div style="text-align: center;">${brand}</div>`, 'background-color: #0b1120;') +
+    card(
+      `<div style="font-size: 16px; line-height: 1.5; color: #474747;">${heading}${paragraphs}${link}</div>`,
+      'background-color: #ffffff; padding: 8px 16px;',
+    ) +
+    card(
+      '<p style="margin: 0; font-size: 12px; line-height: 1.6; color: #979797;">Sent by Parsec, a fork of It&#39;s a Plan run by NAFDO.</p>',
+      'background-color: #ffffff; padding: 0 16px 8px; border-top: 1px solid #e9e9e9;',
+    ) +
+    '</center></body></html>';
+  return { text: plain, html };
 }

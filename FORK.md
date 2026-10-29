@@ -11,6 +11,14 @@ changes:
   logo, favicon, Apple and PWA icons, the app name (`APP_NAME`), and the
   name in emails, the API title, the GitHub link comment and the passkey
   name. Brand sources are in `assets/parsec/`.
+- Team notification providers have their own From address (SMTP and
+  Resend). Empty falls back to `EMAIL_FROM`, then to the SMTP username.
+- Every outgoing email uses one HTML layout (`emailBody` in
+  `packages/mailer`) modelled on Plane's email templates: dark header with
+  the Parsec logo, a card with heading, button and fallback link, and a
+  footer. The logo is `apps/web/public/parsec-email-logo.png`.
+- The CLA workflow is removed: it asks contributors to sign upstream's
+  Contributor License Agreement, which does not apply to this fork.
 - `publish-images.yml` lowercases the repository name for the GHCR image
   names (`ghcr.io/nuenni/parsec-api`, `-web`, `-worker`, `-bot`).
 

@@ -14,13 +14,17 @@ export async function sendAuthEmail(input: {
   subject: string;
   text: string;
   url?: string;
+  action?: string;
 }): Promise<boolean> {
   const config = await getInstanceEmailConfig();
   if (!config) {
     console.warn('[auth] no email provider configured, dropping mail:', input.subject);
     return false;
   }
-  const { text, html } = emailBody(input.text, input.url);
+  const { text, html } = emailBody(input.text, input.url, {
+    heading: input.subject,
+    action: input.action,
+  });
   const result = await sendEmail(config, {
     to: input.to,
     subject: input.subject,

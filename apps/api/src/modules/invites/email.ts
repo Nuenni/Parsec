@@ -78,15 +78,17 @@ export async function sendTeamInviteEmail(teamId: number, invite: InviteRow): Pr
   const [row] = await db.select({ name: team.name }).from(team).where(eq(team.id, teamId));
   const teamName = (row?.name ?? 'a team').replace(/[\r\n]+/g, ' ');
   const inviter = invite.invitedByName ?? invite.invitedByEmail ?? 'A Parsec user';
+  const subject = `You were invited to ${teamName} on Parsec`;
   const { text, html } = emailBody(
     `${inviter} invited you to join the team ${teamName} as ${invite.teamRole}.\n\n` +
       'Open the invitation to sign in or create an account. ' +
       'If you did not expect this invitation, you can ignore this email.',
     `${trustedOrigins[0]}/invite/${invite.token}`,
+    { heading: subject, action: 'Open invitation' },
   );
   const result = await sendEmail(config, {
     to: invite.email,
-    subject: `You were invited to ${teamName} on Parsec`,
+    subject,
     text,
     html,
   });
