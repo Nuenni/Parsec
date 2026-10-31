@@ -34,7 +34,23 @@ parsec-loader-light.svg    animated, light
 parsec-logo-light.svg      mark plus wordmark, for light backgrounds
 parsec-logo-dark.svg       mark plus wordmark, for dark backgrounds
 preview.png                overview
+
+png/parsec-mark-{16..1024}.png        transparent, dark
+png/parsec-mark-light-{16..1024}.png  transparent, light
+png/parsec-icon-{16..512}.png         badge, incl. 180 (Apple) / 192 / 512 (PWA)
+png/parsec-icon-maskable-512.png
+png/parsec-logo-{light,dark}[@2x,@4x].png
+
+favicon.ico                           16 / 32 / 48 / 64 in one file
+gif/parsec-loader-{dark,light}.gif     256 px, 24 frames, 30 ms
+gif/parsec-loader-{dark,light}-128.gif 128 px
 ```
+
+The GIFs have an opaque background (`#0b1120` or white), because GIF
+transparency leaves fringes on soft edges. Render them again for a loading
+screen with a different background. Prefer `parsec-loader.svg` where
+possible: about 1 KB instead of 60, scales without loss and respects
+`prefers-reduced-motion`.
 
 ## Where they are used
 
