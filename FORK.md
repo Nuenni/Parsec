@@ -33,9 +33,11 @@ ourselves.
 ### About the name
 
 A parsec is the distance at which one astronomical unit subtends an angle
-of one arcsecond: you measure an angle and get a distance. The logo uses
-the same idea: an observer point, a measured arc, and the angle mark that
-closes it.
+of one arcsecond: you measure an angle and get a distance. The logo does
+not try to explain that. It is a geometric mark: four bars on the edges of
+a square, each shifted by one corner, with no accent colour. A quarter turn
+maps it onto itself, so the loading indicator is the same shape turning.
+Details in `assets/parsec/README.md`.
 
 ## Branches
 

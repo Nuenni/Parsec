@@ -17,6 +17,7 @@ packages/db/src/schema/auth.ts linguist-generated=true
 README.md merge=ours
 apps/web/src/app/icon.svg merge=ours
 apps/web/src/app/apple-icon.png merge=ours
+apps/web/src/app/favicon.ico merge=ours
 apps/web/public/icon-192.png merge=ours
 apps/web/public/icon-512.png merge=ours
 apps/web/public/icon-maskable-512.png merge=ours
