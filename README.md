@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/parsec/logo.svg" alt="Parsec" width="120" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/parsec/parsec-logo-dark.svg" />
+    <img src="assets/parsec/parsec-logo-light.svg" alt="Parsec" width="200" />
+  </picture>
 </p>
 
 <h1 align="center">Parsec</h1>

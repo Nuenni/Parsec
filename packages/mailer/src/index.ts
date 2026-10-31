@@ -297,7 +297,7 @@ export function emailBody(
   const plain = url ? `${text}\n\n${url}` : text;
   const logo = logoUrl(url);
   const brand = logo
-    ? `<img src="${escape(logo)}" width="120" alt="Parsec" style="display: block; margin: 0 auto; height: auto;" />`
+    ? `<img src="${escape(logo)}" width="139" alt="Parsec" style="display: block; margin: 0 auto; height: auto;" />`
     : '<span style="color: #ffffff; font-size: 22px; font-weight: 600;">Parsec</span>';
   const paragraphs = text
     .split(/\n{2,}/)
