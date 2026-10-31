@@ -5,8 +5,6 @@
   </picture>
 </p>
 
-<h1 align="center">Parsec</h1>
-
 <p align="center"><b>Self-hosted project & ticket management, running our own way.</b></p>
 
 <p align="center">
