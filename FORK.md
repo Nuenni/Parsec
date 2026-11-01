@@ -16,7 +16,7 @@ changes:
 - Every outgoing email uses one HTML layout (`emailBody` in
   `packages/mailer`) modelled on Plane's email templates: dark header with
   the Parsec logo, a card with heading, button and fallback link, and a
-  footer. The logo is `apps/web/public/parsec-email-logo.png`.
+  footer. The logo is `apps/web/public/parsec-email-logo-v2.png`.
 - The CLA workflow is removed: it asks contributors to sign upstream's
   Contributor License Agreement, which does not apply to this fork.
 - `publish-images.yml` lowercases the repository name for the GHCR image

@@ -273,11 +273,12 @@ const CODE =
   'word-break: break-all;';
 
 // The logo is served by the web app the link points to; a message without a link
-// shows the name instead.
+// shows the name instead. The file name carries the brand version: mail clients and
+// their image proxies cache by URL, so a new logo needs a new name.
 function logoUrl(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
-    return `${new URL(url).origin}/parsec-email-logo.png`;
+    return `${new URL(url).origin}/parsec-email-logo-v2.png`;
   } catch {
     return null;
   }
@@ -307,7 +308,7 @@ export function emailBody(
     ? `<h1 style="margin: 0 0 12px; font-size: 22px; line-height: 1.35; font-weight: 600; color: #111111;">${escape(layout.heading)}</h1>`
     : '';
   const link = url
-    ? `<table role="presentation" style="margin: 8px 0 24px;"><tr><td><a href="${escape(url)}" target="_blank" style="background-color: #4f46e5; border-radius: 6px; color: #ffffff; padding: 12px 24px; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 500;">${escape(layout.action ?? 'Open in Parsec')}</a></td></tr></table>` +
+    ? `<table role="presentation" style="margin: 8px 0 24px;"><tr><td><a href="${escape(url)}" target="_blank" style="background-color: #111827; border: 1px solid #374151; border-radius: 6px; color: #f8fafc; padding: 12px 24px; text-decoration: none; display: inline-block; font-size: 16px; font-weight: 500;">${escape(layout.action ?? 'Open in Parsec')}</a></td></tr></table>` +
       '<p style="margin: 0; font-size: 13px; line-height: 1.6; color: #5f5e5e;">If the button does not work, copy this link into your browser:</p>' +
       `<p style="margin: 6px 0 0; font-size: 13px; line-height: 1.6;"><span style="${CODE}">${escape(url)}</span></p>`
     : '';
