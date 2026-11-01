@@ -61,7 +61,7 @@ possible: about 1 KB instead of 60, scales without loss and respects
 | Favicon fallback | `apps/web/src/app/favicon.ico` | 16/32/48/64 badge |
 | Apple touch icon | `apps/web/src/app/apple-icon.png` | badge, 180 px |
 | PWA icons | `apps/web/public/icon-{192,512}.png`, `icon-maskable-512.png` | badge |
-| Email header | `apps/web/public/parsec-email-logo.png` | `parsec-logo-dark`, 2x |
+| Email header | `apps/web/public/parsec-email-logo-v2.png` | `parsec-logo-dark`, 2x |
 | README | `README.md` | `parsec-logo-{light,dark}.svg` |
 
 The name and logo "Parsec" are not covered by the AGPL, see `FORK.md`.
