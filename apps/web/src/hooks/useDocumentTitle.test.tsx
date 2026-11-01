@@ -93,6 +93,19 @@ describe('useDocumentTitle', () => {
     await render({ section: 'Acme', page: 'Acme › New' });
     assert.equal(document.title, 'Acme › New');
   });
+
+  it('settles on a title with repeated whitespace instead of rewriting it forever', async () => {
+    let writes = 0;
+    const observer = new window.MutationObserver(() => writes++);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    await act(async () => {
+      root.render(<Section section="Acme" page={'PG-145 · [Idea]  Provider\tIntegrations '} />);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    observer.disconnect();
+    assert.equal(document.title, 'PG-145 · [Idea] Provider Integrations');
+    assert.ok(writes < 10, `title rewritten ${writes} times`);
+  });
 });
 
 describe('titlePath', () => {
