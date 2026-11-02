@@ -19,6 +19,8 @@ export interface View {
   // fields, activity) or only their title, description, state, type, priority,
   // dates, subtasks and links.
   shareExtended: boolean;
+  // When the share link stops working, or null when it never does.
+  shareExpiresAt: string | null;
   // Whether the current user marked the view as a favorite: it pins the tab to the
   // front and lists the view under Work items in the sidebar.
   favorite: boolean;

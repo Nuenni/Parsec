@@ -17,10 +17,16 @@ export interface ViewRow {
   // fields, activity) or only their title, description, state, type, priority,
   // dates, subtasks and links.
   shareExtended: boolean;
+  // When the share link stops working, or null when it never does. A link past
+  // its expiry reads as not shared even before the sweep clears it.
+  shareExpiresAt: string | null;
   createdAt: string;
 }
 
 function mapView(row: typeof projectView.$inferSelect): ViewRow {
+  const shared =
+    row.shareToken !== null &&
+    (row.shareExpiresAt === null || row.shareExpiresAt.getTime() > Date.now());
   return {
     id: row.id,
     projectId: row.projectId,
@@ -29,8 +35,9 @@ function mapView(row: typeof projectView.$inferSelect): ViewRow {
     filters: row.filters,
     display: row.display,
     position: num(row.position),
-    shareToken: row.shareToken,
-    shareExtended: row.shareExtended,
+    shareToken: shared ? row.shareToken : null,
+    shareExtended: shared && row.shareExtended,
+    shareExpiresAt: shared && row.shareExpiresAt ? iso(row.shareExpiresAt) : null,
     createdAt: iso(row.createdAt),
   };
 }
