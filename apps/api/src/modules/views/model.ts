@@ -25,6 +25,7 @@ export const ViewResponse = t.Object({
   position: t.Number(),
   shareToken: t.Nullable(t.String()),
   shareExtended: t.Boolean(),
+  shareExpiresAt: t.Nullable(t.String()),
   favorite: t.Boolean(),
   createdAt: t.String(),
 });
