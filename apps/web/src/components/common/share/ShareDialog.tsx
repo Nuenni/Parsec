@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 import { CalendarClock, Check, ChevronDown, Copy, Globe, Loader2 } from 'lucide-react';
 import type { ShareOptions, ShareState } from '@/lib/api/endpoints/share';
@@ -59,6 +59,7 @@ export default function ShareDialog({
   disable,
   pathForToken,
   calendarPathForToken,
+  notice,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -76,6 +77,8 @@ export default function ShareDialog({
   pathForToken: (token: string) => string;
   // The calendar feed path, for a shared view. Omitted by an issue share.
   calendarPathForToken?: (token: string) => string;
+  // Shown under the dialog's description, whether or not the entity has a link.
+  notice?: ReactNode;
 }) {
   const t = useTranslations('common.share');
   const format = useFormatter();
@@ -160,6 +163,7 @@ export default function ShareDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('hint')}</DialogDescription>
         </DialogHeader>
+        {notice}
 
         {current ? (
           <div className="flex flex-col gap-3">
