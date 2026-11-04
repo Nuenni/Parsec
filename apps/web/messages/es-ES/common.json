@@ -137,6 +137,8 @@
     "includeIssuesHint": "Las incidencias de este proyecto que nombran las páginas muestran su título y estado, y se abren en modo lectura: descripción, estado, tipo, prioridad y fechas. Sin comentarios ni personas.",
     "throughDocuments": "Pública a través de documentos compartidos",
     "throughDocumentsHint": "Estas páginas compartidas nombran esta incidencia y muestran incidencias vinculadas, así que se puede leer desde sus enlaces.",
+    "sourceCode": "Código fuente",
+    "openSource": "{app} es de código abierto bajo la licencia AGPL-3.0.",
     "overviewTitle": "Público",
     "overviewDescription": "Todo lo de este proyecto que cualquiera con el enlace puede leer, y cuándo deja de funcionar cada enlace.",
     "overviewEmpty": "No hay nada de este proyecto compartido públicamente.",

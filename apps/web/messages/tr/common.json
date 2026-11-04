@@ -137,6 +137,8 @@
     "includeIssuesHint": "Sayfalarda adı geçen bu projenin işleri başlık ve durumlarıyla gösterilir ve salt okunur açılır: açıklama, durum, tür, öncelik ve tarihler. Yorum ve kişi bilgisi yok.",
     "throughDocuments": "Paylaşılan belgeler üzerinden herkese açık",
     "throughDocumentsHint": "Bu paylaşılan sayfalar bu işi anıyor ve bağlantılı işleri gösteriyor, bu yüzden bağlantıları üzerinden okunabilir.",
+    "sourceCode": "Kaynak kodu",
+    "openSource": "{app}, AGPL-3.0 lisansıyla açık kaynaktır.",
     "overviewTitle": "Herkese açık",
     "overviewDescription": "Bu projede bağlantıya sahip herkesin okuyabildiği her şey ve her bağlantının ne zaman çalışmayı bırakacağı.",
     "overviewEmpty": "Bu projede herkese açık paylaşılan bir şey yok.",

@@ -24,6 +24,7 @@ import SidebarNavItem from '@/components/layout/SidebarNavItem';
 import SidebarMainNav from '@/components/layout/SidebarMainNav';
 import SidebarSettingsNav from '@/components/layout/SidebarSettingsNav';
 import SidebarBrandFooter from '@/components/brand/SidebarBrandFooter';
+import SidebarSourceLink from '@/components/layout/SidebarSourceLink';
 
 // The app sidebar. It has two modes driven by the route: the main work
 // navigation, and the project settings navigation reached through the "Project
@@ -98,6 +99,7 @@ export default function AppSidebar({
                 active={onMcp}
                 disabled={disabled}
               />
+              <SidebarSourceLink />
               {/* Instance administration, only for the owner account. The API
                   enforces the same, so hiding it here is about noise, not access. */}
               {isGod && (

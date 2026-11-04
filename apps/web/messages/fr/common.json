@@ -137,6 +137,8 @@
     "includeIssuesHint": "Les tickets de ce projet cités dans les pages affichent leur titre et leur statut, et s’ouvrent en lecture seule : description, statut, type, priorité et dates. Sans commentaires ni personnes.",
     "throughDocuments": "Public via des documents partagés",
     "throughDocumentsHint": "Ces pages partagées citent ce ticket et affichent les tickets liés, il est donc lisible via leurs liens.",
+    "sourceCode": "Code source",
+    "openSource": "{app} est open source sous licence AGPL-3.0.",
     "overviewTitle": "Public",
     "overviewDescription": "Tout ce que ce projet permet de lire à quiconque a le lien, et quand chaque lien cesse de fonctionner.",
     "overviewEmpty": "Rien dans ce projet n’est partagé publiquement.",
