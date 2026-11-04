@@ -23,6 +23,14 @@ import { useFormatter, useTranslations } from 'next-intl';
 // The quick expiry choices, in days from now.
 const EXPIRY_PRESETS = [1, 3, 7] as const;
 
+type ShareOptionName = 'extended' | 'includeChildren' | 'includeIssues';
+
+const OPTION_TEXT = {
+  extended: { label: 'fullDetails', hint: 'fullDetailsHint' },
+  includeChildren: { label: 'includeSubpages', hint: 'includeSubpagesHint' },
+  includeIssues: { label: 'includeIssues', hint: 'includeIssuesHint' },
+} as const;
+
 // A link set to expire after `days` stops working that many days from now.
 function inDays(days: number): string {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
@@ -45,7 +53,7 @@ export default function ShareDialog({
   onOpenChange,
   title,
   token,
-  option,
+  options,
   expiresAt,
   enable,
   disable,
@@ -56,9 +64,9 @@ export default function ShareDialog({
   onOpenChange: (open: boolean) => void;
   title: string;
   token: string | null;
-  // The current link's one setting: whether an issue or a view shows its full details,
-  // or whether a document's subpages come with it.
-  option: { name: 'extended' | 'includeChildren'; checked: boolean };
+  // The current link's settings: whether an issue or a view shows its full details, or
+  // whether a document's subpages and the issues it names come with it.
+  options: { name: ShareOptionName; checked: boolean }[];
   // When the current link stops working, or null when it never does.
   expiresAt: string | null;
   // Creates the link, or changes the setting of a live one or when it expires;
@@ -108,10 +116,14 @@ export default function ShareDialog({
   }
 
   const onEnable = () =>
-    run(async () => apply(await enable({ [option.name]: false })), t('createFailed'));
+    run(
+      async () =>
+        apply(await enable(Object.fromEntries(options.map((option) => [option.name, false])))),
+      t('createFailed'),
+    );
 
-  const onSetOption = (next: boolean) =>
-    run(async () => apply(await enable({ [option.name]: next })), t('changeFailed'));
+  const onSetOption = (name: ShareOptionName, next: boolean) =>
+    run(async () => apply(await enable({ [name]: next })), t('changeFailed'));
 
   const onSetExpiry = (next: string | null) => {
     setExpiryOpen(false);
@@ -197,21 +209,24 @@ export default function ShareDialog({
               </div>
             )}
 
-            <label className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5">
-              <span className="min-w-0">
-                <span className="block text-sm">
-                  {option.name === 'extended' ? t('fullDetails') : t('includeSubpages')}
+            {options.map((option) => (
+              <label
+                key={option.name}
+                className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm">{t(OPTION_TEXT[option.name].label)}</span>
+                  <span className="block text-xs text-muted-foreground">
+                    {t(OPTION_TEXT[option.name].hint)}
+                  </span>
                 </span>
-                <span className="block text-xs text-muted-foreground">
-                  {option.name === 'extended' ? t('fullDetailsHint') : t('includeSubpagesHint')}
-                </span>
-              </span>
-              <Switch
-                checked={option.checked}
-                disabled={busy}
-                onCheckedChange={(next) => void onSetOption(next)}
-              />
-            </label>
+                <Switch
+                  checked={option.checked}
+                  disabled={busy}
+                  onCheckedChange={(next) => void onSetOption(option.name, next)}
+                />
+              </label>
+            ))}
 
             <div className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5">
               <span className="min-w-0">
