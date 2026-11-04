@@ -172,7 +172,7 @@ export default function IssueActionsBar({
               size={btnSize}
               className={
                 shared
-                  ? 'text-emerald-600 dark:text-emerald-500'
+                  ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300'
                   : 'text-muted-foreground hover:text-foreground'
               }
               onClick={() => setSharing(true)}
