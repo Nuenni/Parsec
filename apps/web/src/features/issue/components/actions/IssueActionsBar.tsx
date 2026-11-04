@@ -170,7 +170,11 @@ export default function IssueActionsBar({
             <Button
               variant="ghost"
               size={btnSize}
-              className={shared ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}
+              className={
+                shared
+                  ? 'text-emerald-600 dark:text-emerald-500'
+                  : 'text-muted-foreground hover:text-foreground'
+              }
               onClick={() => setSharing(true)}
             >
               <Globe className="size-4" />

@@ -50,7 +50,7 @@ export default function DocumentShareButton({
             aria-label={label}
             className={
               document.shareToken
-                ? 'text-foreground'
+                ? 'text-emerald-600 dark:text-emerald-500'
                 : 'text-muted-foreground hover:text-foreground'
             }
             onClick={() => setOpen(true)}
