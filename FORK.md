@@ -32,6 +32,12 @@ changes:
   `0174_document_share` has the same columns. Resolve them on the next
   upstream merge the same way as `0159_share_expiry`.
 
+- A "Source code" link to this repository sits in the app sidebar and in the
+  footer of every public share page (`SOURCE_CODE_URL` in
+  `apps/web/src/utils/app.ts`). AGPL-3.0 section 13 asks a modified version used
+  over a network to offer its source to its users; the share pages reach people
+  outside the team. Fork only, upstream runs unmodified code.
+
 The complete source code of the running instance lives in this repository.
 
 The name and logo "Parsec" are not part of the AGPL licensing. This

@@ -7,6 +7,10 @@ export const APP_NAME = 'Parsec';
 // The product site. The product mark on the public share pages links to it.
 export const APP_SITE_URL = 'https://itsaplan.dev/';
 
+// The source of this build. AGPL-3.0 section 13: a modified version that people use
+// over a network offers them its source, so the app and the public share pages link it.
+export const SOURCE_CODE_URL = 'https://github.com/Nuenni/Parsec';
+
 // The page about the other editions, linked wherever the app names what they add.
 export const PRO_URL = 'https://itsaplan.dev/pro';
 

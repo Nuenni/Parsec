@@ -137,6 +137,8 @@
     "includeIssuesHint": "Isu proyek ini yang disebut di halaman menampilkan judul dan statusnya, dan terbuka hanya-baca: deskripsi, status, tipe, prioritas, dan tanggal. Tanpa komentar dan tanpa orang.",
     "throughDocuments": "Publik melalui dokumen yang dibagikan",
     "throughDocumentsHint": "Halaman yang dibagikan ini menyebut isu ini dan menampilkan isu tertaut, jadi isu ini bisa dibaca lewat tautannya.",
+    "sourceCode": "Kode sumber",
+    "openSource": "{app} bersifat open source dengan lisensi AGPL-3.0.",
     "overviewTitle": "Publik",
     "overviewDescription": "Semua isi proyek ini yang bisa dibaca siapa pun yang punya tautan, dan kapan tiap tautan berhenti berfungsi.",
     "overviewEmpty": "Tidak ada isi proyek ini yang dibagikan secara publik.",

@@ -137,6 +137,8 @@
     "includeIssuesHint": "The issues of this project that the pages name show their title and state, and open read-only: description, state, type, priority and dates. No comments and no people.",
     "throughDocuments": "Public through shared documents",
     "throughDocumentsHint": "These shared pages name this issue and show linked issues, so it can be read through their links.",
+    "sourceCode": "Source code",
+    "openSource": "{app} is open source under the AGPL-3.0.",
     "overviewTitle": "Public",
     "overviewDescription": "Everything in this project that anyone with the link can read, and when each link stops working.",
     "overviewEmpty": "Nothing in this project is shared publicly.",
