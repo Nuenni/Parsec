@@ -26,9 +26,10 @@ changes:
   take upstream's version and resolve the migration overlap (our
   `0159_share_expiry` vs. upstream `0171_share_expiry`, see PA-15).
 - Documents can be shared with a public read-only link that expires, with
-  an "Include subpages" switch. Offered upstream as croffasia/itsaplan#803.
-  Our migration is `0160_document_share`; upstream's is
-  `0174_document_share` with the same columns. Resolve it on the next
+  an "Include subpages" switch and a "Show linked issues" switch. Offered
+  upstream as croffasia/itsaplan#803. Our migrations are
+  `0160_document_share` and `0161_document_share_issues`; upstream's
+  `0174_document_share` has the same columns. Resolve them on the next
   upstream merge the same way as `0159_share_expiry`.
 
 The complete source code of the running instance lives in this repository.
