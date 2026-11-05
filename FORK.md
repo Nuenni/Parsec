@@ -120,6 +120,30 @@ with that tag. Coolify runs the images with `VERSION` set to the version
 without the `v` (`1.9.0-parsec.1`). Prerelease-style tags do not move
 `latest`.
 
+## GitHub Actions on a fork
+
+Workflows do not run in a fork until they are enabled once by hand, on the
+repository's Actions tab: a banner reading "Workflows aren't being run on this
+forked repository" with a green button, "I understand my workflows, go ahead and
+enable them". Nothing else sets it, and nothing in the API shows it. While the
+fork is in that state:
+
+    GET  /repos/Nuenni/Parsec/actions/permissions   -> {"enabled": true, ...}
+    GET  /repos/Nuenni/Parsec/actions/workflows/... -> {"state": "active"}
+    POST /repos/Nuenni/Parsec/actions/.../dispatches
+         -> HTTP 422: Actions has been disabled for this repository.
+
+So the API says yes three times and the dispatch still fails. Turning Actions off
+and on again under Settings -> Actions does not clear it; it puts the fork back
+into that state, so toggling makes it worse rather than better.
+
+Two checks that tell this apart from a billing block or a GitHub incident, both
+of which produce the same 422: a non-forked repository of the same account still
+runs its workflows, and githubstatus.com reports all systems operational. If both
+hold, it is the fork button.
+
+Found on 05.11.2026, when v1.10.0-parsec.1 could not be built (PA-15).
+
 ## Working with upstream
 
 Upstream updates are **merged, not rebased**. Rebasing rewrites our history
