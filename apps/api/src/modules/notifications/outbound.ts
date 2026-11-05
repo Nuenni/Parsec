@@ -17,7 +17,7 @@ import { readRedactedSettings } from '#modules/notification-settings/service';
 import { getPreferencesForUsers } from '#modules/notification-preferences/service';
 import { getTelegramChatIds, hasUsableInstanceBot } from '#modules/telegram/service';
 import { escapeHtml } from '#shared/lib';
-import { documentUrl, issueUrl, teamRef } from '#modules/teams/ref';
+import { commentUrl, documentUrl, issueUrl, teamRef } from '#modules/teams/ref';
 import type { NotificationType, NewNotificationRow } from './service';
 
 // Outbound notification delivery: turns the inbox notification rows produced by an
@@ -164,11 +164,12 @@ interface Messages {
 }
 
 // The copy of one event, about the issue or the document its rows point at. Null when
-// that is gone.
+// that is gone. A comment's event links to the comment.
 async function composeMessages(
   notifications: NewNotificationRow[],
   projectRow: { key: string; teamId: number; teamSlug: string | null },
   actor: string,
+  commentId: number | null,
 ): Promise<Messages | null> {
   const first = notifications[0];
   const ref = teamRef({ id: projectRow.teamId, slug: projectRow.teamSlug });
@@ -194,7 +195,10 @@ async function composeMessages(
     .where(eq(issue.id, first.issueId));
   if (!issueRow) return null;
   const issueKey = issueRef(projectRow.key, issueRow.seq);
-  const url = issueUrl(ref, projectRow.key, issueRow.seq);
+  const url =
+    commentId != null
+      ? commentUrl(ref, projectRow.key, issueRow.seq, commentId)
+      : issueUrl(ref, projectRow.key, issueRow.seq);
   // One issue event, so every 'state_changed' row points at the same activity row.
   const statusActivityId =
     notifications.find((n) => n.type === 'state_changed')?.sourceActivityId ?? null;
@@ -212,6 +216,7 @@ async function composeMessages(
 export async function enqueueOutbound(
   notifications: NewNotificationRow[],
   actorName: string | null,
+  commentId: number | null,
 ): Promise<void> {
   if (notifications.length === 0) return;
   const projectId = notifications[0].projectId;
@@ -242,7 +247,12 @@ export async function enqueueOutbound(
     settings.telegram.enabled && (settings.telegram.hasBotToken || (await hasUsableInstanceBot()));
   if (!emailEnabled && !telegramEnabled) return;
 
-  const messages = await composeMessages(notifications, projectRow, actorName ?? 'Someone');
+  const messages = await composeMessages(
+    notifications,
+    projectRow,
+    actorName ?? 'Someone',
+    commentId,
+  );
   if (!messages) return;
 
   const userIds = [...new Set(notifications.map((n) => n.userId))];

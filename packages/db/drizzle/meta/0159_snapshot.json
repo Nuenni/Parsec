@@ -1,5 +1,5 @@
 {
-  "id": "4754c0b3-be62-4552-9245-4df606102918",
+  "id": "84748b93-dcaf-405a-afe7-a11413f4be02",
   "prevId": "af9cba4d-415a-4de3-bf2a-9c3a2ad0d1b5",
   "version": "7",
   "dialect": "postgresql",
@@ -5849,12 +5849,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -10620,12 +10614,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -11332,7 +11320,7 @@
           "name": "team_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -11375,6 +11363,22 @@
           ],
           "isUnique": true,
           "where": "\"team_role\".\"is_default\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "team_role_system_name_uq": {
+          "name": "team_role_system_name_uq",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"team_role\".\"team_id\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}

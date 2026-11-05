@@ -16,6 +16,7 @@ export const qk = {
   issueAgentRuns: (issueId: number) => ['issueAgentRuns', issueId] as const,
   issueAgentRunTrace: (issueId: number, runId: number, traceId?: string) =>
     ['issueAgentRuns', issueId, 'trace', runId, traceId ?? null] as const,
+  internalRunTrace: (runId: number) => ['internalRunTrace', runId] as const,
   projects: ['projects'] as const,
   // Under projects, so what refreshes the project list refreshes every search with it.
   projectSearch: (filters: unknown) => ['projects', 'search', filters] as const,
@@ -33,6 +34,21 @@ export const qk = {
   scimGroups: (workspaceId: number | null) => [...scimKey(workspaceId), 'groups'] as const,
   scimProjects: (workspaceId: number | null) => [...scimKey(workspaceId), 'projects'] as const,
   teamProjectDefaults: (teamId: number) => ['team', teamId, 'project-defaults'] as const,
+  // The project templates of a workspace and those its teams see share one root, since
+  // saving or deleting one changes the lists of every team.
+  projectTemplates: ['project-templates'] as const,
+  teamProjectTemplates: (teamId: number) => ['project-templates', 'team', teamId] as const,
+  teamProjectTemplate: (teamId: number, templateId: number) =>
+    ['project-templates', 'team', teamId, templateId] as const,
+  workspaceProjectTemplates: (workspaceId: number) =>
+    ['project-templates', 'workspace', workspaceId] as const,
+  workspaceProjectTemplate: (workspaceId: number, templateId: number) =>
+    ['project-templates', 'workspace', workspaceId, templateId] as const,
+  importedTemplatePreview: (workspaceId: number, template: unknown) =>
+    ['project-templates', 'workspace', workspaceId, 'import', template] as const,
+  projectTemplatePreview: (workspaceId: number, projectId: number, include: unknown) =>
+    ['project-templates', 'workspace', workspaceId, 'preview', projectId, include] as const,
+  templatePublisher: (workspaceId: number) => ['template-publisher', workspaceId] as const,
   // The members of a team and the projects it owns, each read by its own section. A
   // page is scoped by the search term and the window it was read with.
   teamMembers: (teamId: number, params: unknown) => ['team', teamId, 'members', params] as const,
@@ -183,6 +199,8 @@ export const qk = {
   // API, so it hangs off the same key with a 'tools' tail.
   aiAgents: (teamId: number, projectId?: number) =>
     ['aiAgents', teamId, projectId ?? 'all'] as const,
+  agentDirectory: (teamId: number, projectId: number) =>
+    ['aiAgents', teamId, projectId, 'directory'] as const,
   anyAiAgents: ['aiAgents'] as const,
   teamAiAgents: (teamId: number) => ['aiAgents', teamId] as const,
   agentTools: (teamId: number) => ['aiAgents', teamId, 'tools'] as const,
@@ -338,6 +356,7 @@ export const qk = {
   instanceAgentSettings: ['instanceAgentSettings'] as const,
   instanceEmbedSites: ['instanceEmbedSites'] as const,
   instanceStorageSettings: ['instanceStorageSettings'] as const,
+  systemRoles: ['systemRoles'] as const,
   // The upload limits as read by the upload UI (open to any signed-in user).
   storageSettings: ['storageSettings'] as const,
   // The running version (any signed-in user) and the upstream release check (god).

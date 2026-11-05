@@ -59,14 +59,18 @@ async function actorName(id: string | null): Promise<string | null> {
   return rows[0]?.name ?? null;
 }
 
-async function insertNotifications(rows: NewNotificationRow[]): Promise<void> {
+// commentId names the comment the event is about, which its email and Telegram link to.
+async function insertNotifications(
+  rows: NewNotificationRow[],
+  commentId: number | null = null,
+): Promise<void> {
   if (rows.length === 0) return;
   const name = await actorName(rows[0].actorUserId);
   await db.insert(notification).values(rows.map((r) => ({ ...r, actorName: name })));
   // Fan out to the project's enabled delivery channels (email, Telegram). Best-effort:
   // a delivery failure must not break the inbox insert or the domain mutation.
   try {
-    await enqueueOutbound(rows, name);
+    await enqueueOutbound(rows, name, commentId);
   } catch (err) {
     console.error('[notifications] outbound enqueue failed:', err);
   }
@@ -109,7 +113,7 @@ export async function notifyComment(
       actorUserId: actor,
     });
   }
-  await insertNotifications(rows);
+  await insertNotifications(rows, comment.id);
 }
 
 // Fan out the mentions an edit newly added to a comment. The handles the comment
@@ -135,6 +139,7 @@ export async function notifyEditedCommentMentions(
       type: 'mentioned' as const,
       actorUserId: comment.actorUserId,
     })),
+    comment.id,
   );
 }
 
@@ -273,6 +278,8 @@ export interface NotificationRow {
   issueSeq: number | null;
   issueTitle: string | null;
   issueStateType: string | null;
+  // Set while the issue comment it is about still exists.
+  issueCommentId: number | null;
   documentId: number | null;
   documentTitle: string | null;
   documentIcon: string | null;
@@ -327,6 +334,8 @@ function mapRow(r: {
   issueSeq: number | null;
   issueTitle: string | null;
   issueStateType: string | null;
+  activityId: number | null;
+  activityKind: string | null;
   documentId: number | null;
   documentTitle: string | null;
   documentIcon: string | null;
@@ -349,6 +358,7 @@ function mapRow(r: {
     issueSeq: r.issueSeq,
     issueTitle: r.issueTitle,
     issueStateType: r.issueStateType,
+    issueCommentId: r.activityKind === 'comment' ? r.activityId : null,
     documentId: r.documentId,
     documentTitle: r.documentTitle,
     documentIcon: r.documentIcon,
@@ -406,6 +416,8 @@ export async function listNotifications(
       issueSeq: issue.sequenceNumber,
       issueTitle: issue.title,
       issueStateType: projectColumn.stateType,
+      activityId: issueActivity.id,
+      activityKind: issueActivity.kind,
       documentId: projectDocument.id,
       documentTitle: projectDocument.title,
       documentIcon: projectDocument.icon,

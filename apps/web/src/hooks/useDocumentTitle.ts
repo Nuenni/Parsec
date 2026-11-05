@@ -15,18 +15,12 @@ const entries = new Set<Entry>();
 let headObserver: MutationObserver | null = null;
 let observedHead: HTMLHeadElement | null = null;
 
-// What `document.title` reads back for a value: the browser strips and collapses ASCII
-// whitespace, so "[Idea]  Name" comes back as "[Idea] Name". Comparing against the raw
-// value would never match, every set would mutate the <title> again and the head
-// observer would call apply() forever, freezing the tab.
-function normalizeTitle(title: string): string {
-  return title.replace(/[\t\n\f\r ]+/g, ' ').trim();
-}
-
 function apply() {
   let top: Entry | null = null;
   for (const entry of entries) if (!top || entry.rank >= top.rank) top = entry;
-  const title = normalizeTitle(top?.title ?? APP_NAME);
+  // The browser trims and collapses whitespace in document.title; match it, or the
+  // comparison below never holds and the head observer loops forever.
+  const title = (top?.title ?? APP_NAME).replace(/[\t\n\f\r ]+/g, ' ').trim();
   if (window.document.title !== title) window.document.title = title;
   // Next streams the metadata, and React can insert its <title> into the head after
   // a page has set its own; the browser shows the first one, so the title is set again.

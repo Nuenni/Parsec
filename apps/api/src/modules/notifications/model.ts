@@ -14,6 +14,7 @@ const NotificationResponse = t.Object({
   issueSeq: t.Nullable(t.Number()),
   issueTitle: t.Nullable(t.String()),
   issueStateType: t.Nullable(t.String()),
+  issueCommentId: t.Nullable(t.Number()),
   documentId: t.Nullable(t.Number()),
   documentTitle: t.Nullable(t.String()),
   documentIcon: t.Nullable(t.String()),

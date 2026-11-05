@@ -10,6 +10,8 @@ export const APP_SITE_URL = 'https://itsaplan.dev/';
 // The source of this build. AGPL-3.0 section 13: a modified version that people use
 // over a network offers them its source, so the app and the public share pages link it.
 export const SOURCE_CODE_URL = 'https://github.com/Nuenni/Parsec';
+// The rules a template published to the gallery at itsaplan.dev must follow.
+export const TEMPLATE_GALLERY_RULES_URL = 'https://itsaplan.dev/terms#template-gallery';
 
 // The page about the other editions, linked wherever the app names what they add.
 export const PRO_URL = 'https://itsaplan.dev/pro';

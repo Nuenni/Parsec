@@ -189,12 +189,7 @@ async function issueBundle(
 // leave it as it stands (the same convention as `extended`).
 export type ShareExpiry = Date | null | undefined;
 
-// True while a share with this expiry still works.
-export function shareActive(expiresAt: Date | null, now = new Date()): boolean {
-  return expiresAt === null || expiresAt.getTime() > now.getTime();
-}
-
-// The SQL form of shareActive for a token lookup.
+// The SQL form of shareLive for a token lookup.
 function activeShare(expiresAt: AnyColumn): SQL {
   return or(isNull(expiresAt), gt(expiresAt, new Date()))!;
 }
@@ -337,12 +332,20 @@ export async function getSharedIssue(token: string): Promise<SharedIssueBundle |
   });
 }
 
+// A private view has no public link, whatever token it carries.
+const sharedViewByToken = (token: string) =>
+  and(
+    eq(projectView.shareToken, token),
+    eq(projectView.isPrivate, false),
+    activeShare(projectView.shareExpiresAt),
+  );
+
 // The bundle for a shared view link, or null if no view carries the token.
 export async function getSharedView(token: string): Promise<SharedViewBundle | null> {
   const rows = await db
     .select()
     .from(projectView)
-    .where(and(eq(projectView.shareToken, token), activeShare(projectView.shareExpiresAt)));
+    .where(sharedViewByToken(token));
   const view = rows[0];
   if (!view) return null;
   const project = await getProjectById(view.projectId);
@@ -401,7 +404,7 @@ export async function getSharedViewIssue(
       extended: projectView.shareExtended,
     })
     .from(projectView)
-    .where(and(eq(projectView.shareToken, token), activeShare(projectView.shareExpiresAt)));
+    .where(sharedViewByToken(token));
   if (rows.length === 0) return null;
   const project = await getProjectById(rows[0].projectId);
   if (!project) return null;

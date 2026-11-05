@@ -54,6 +54,17 @@ export function issueUrl(teamRef: string, key: string, seq: number): string | un
   return base ? `${base}${issueWebPath(teamRef, key, seq)}` : undefined;
 }
 
+// The full URL of a comment on its issue's page, or undefined as for issueUrl.
+export function commentUrl(
+  teamRef: string,
+  key: string,
+  seq: number,
+  commentId: number,
+): string | undefined {
+  const url = issueUrl(teamRef, key, seq);
+  return url && `${url}#comment-${commentId}`;
+}
+
 // The full URL of a document's page, e.g. "/acme/MKT/docs/12" on the web origin, or
 // undefined as for issueUrl.
 export function documentUrl(teamRef: string, key: string, documentId: number): string | undefined {

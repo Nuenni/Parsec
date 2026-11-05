@@ -3,7 +3,7 @@
 Parsec is a fork of [It's a Plan](https://github.com/croffasia/itsaplan)
 (itsaplan), licensed under AGPL-3.0.
 
-Modified since October 2026 by nafdo. Based on itsaplan v1.9.0. Notable
+Modified since October 2026 by nafdo. Based on itsaplan v1.10.0. Notable
 changes:
 
 - Rebranding from "It's a Plan" to "Parsec": the product mark in the
@@ -22,15 +22,25 @@ changes:
 - `publish-images.yml` lowercases the repository name for the GHCR image
   names (`ghcr.io/nuenni/parsec-api`, `-web`, `-worker`, `-bot`).
 - Share links can expire (1, 3 or 7 days or a chosen date). Upstream merged
-  the same feature as croffasia/itsaplan#786; on the next upstream merge
-  take upstream's version and resolve the migration overlap (our
-  `0159_share_expiry` vs. upstream `0171_share_expiry`, see PA-15).
+  the same feature as croffasia/itsaplan#786 and it ships in v1.10.0, so the
+  v1.10.0 merge dropped our `0159_share_expiry` and kept upstream's
+  `0171_share_expiry` (see PA-15). Fork deviation: that file is patched to
+  `ADD COLUMN IF NOT EXISTS`, because our own migration had already added the
+  columns in production and drizzle checks no hashes. Leave it that way.
 - Documents can be shared with a public read-only link that expires, with
   an "Include subpages" switch and a "Show linked issues" switch. Offered
-  upstream as croffasia/itsaplan#803. Our migrations are
-  `0160_document_share` and `0161_document_share_issues`; upstream's
-  `0174_document_share` has the same columns. Resolve them on the next
-  upstream merge the same way as `0159_share_expiry`.
+  upstream as croffasia/itsaplan#803, **not** part of v1.10.0: upstream's
+  `0174` is `agent_schedules_permission`, not a document share. Ours is now
+  one migration, `0175_document_share`, generated on top of upstream's `0174`
+  and written with `ADD COLUMN IF NOT EXISTS` plus a guarded constraint,
+  because the columns already exist in production. The feature lives inside
+  the share module (`apps/api/src/modules/share/*`), which upstream also
+  changes: on an upstream merge resolve those files hunk by hunk, never by
+  taking one side whole, or the document sharing disappears.
+- The share dialog takes a list of named options (`extended`,
+  `includeChildren`, `includeIssues`) where upstream has a single `extended`
+  boolean, because a document carries two switches. Callers pass
+  `options={[...]}`, not `extended={...}`.
 
 - A "Source code" link to this repository sits in the app sidebar and in the
   footer of every public share page (`SOURCE_CODE_URL` in

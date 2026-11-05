@@ -1,45 +1,77 @@
-import { db, agentRun, agentSchedule, aiAgent, project, team, issue, revision } from '@repo/db';
+import {
+  db,
+  agentRun,
+  agentSchedule,
+  aiAgent,
+  project,
+  team,
+  issue,
+  revision,
+  teamMember,
+  teamWorkspaceId,
+} from '@repo/db';
 import { and, desc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
-import { readableProjectIds } from '#shared/access';
+import { getTeamAccess, readableProjectIds } from '#shared/access';
+import type { WorkspaceGrant } from '#shared/workspace-roles';
+import { runsTeam } from '#modules/teams/service';
 import { iso } from '#shared/lib';
-import { executionState, contextTokensOf, runDocumentVisibleTo } from '../core/run-queue';
+import { getLimits, getRunLimit } from '#shared/limits';
+import {
+  executionState,
+  contextTokensOf,
+  countRunsInFlight,
+  holdsSlot,
+  runDocumentVisibleTo,
+} from '../core/run-queue';
 
 // An agent with an invocation URL is sent its work and only calls back while it has
-// some, so its last contact says nothing about whether the endpoint is up.
-const runnerPresence = sql<'push' | 'online' | 'offline' | 'never'>`CASE
+// some, so its last contact says nothing about whether the endpoint is up. An internal
+// agent runs in the api and has no runner.
+const runnerPresence = sql<'push' | 'online' | 'offline' | 'never' | null>`CASE
+  WHEN ${aiAgent.kind} = 'internal' THEN NULL
   WHEN ${aiAgent.invocationUrl} IS NOT NULL THEN 'push'
   WHEN ${aiAgent.lastSeenAt} IS NULL THEN 'never'
   WHEN ${aiAgent.lastSeenAt} > now() - interval '90 seconds' THEN 'online'
   ELSE 'offline' END`;
 
-function queueProjectIds(userId: string, mcpOnly = false) {
+function queueProjectIds(userId: string, mcpOnly = false, grants?: Map<number, WorkspaceGrant>) {
   return readableProjectIds(
     userId,
     [
       ['work_items', 'read'],
       ['ai_agents', 'read'],
     ],
-    { mcpOnly, includeArchived: true },
+    { mcpOnly, includeArchived: true, grants },
   );
 }
 
+// `projectIds` narrows the queue to those projects, of the ones the caller may read. With
+// `granted` the caller reads every one of them, as whoever runs their team or workspace
+// does, so their permissions in each are not asked; an MCP client keeps to its own still.
 export async function listRunnerQueue(
   userId: string,
   window: { limit: number; offset: number },
-  mcpOnly = false,
-  runId?: number,
+  {
+    mcpOnly = false,
+    runId,
+    projectIds,
+    granted = false,
+  }: { mcpOnly?: boolean; runId?: number; projectIds?: number[]; granted?: boolean } = {},
 ) {
-  const ids = await queueProjectIds(userId, mcpOnly);
+  const trusted = granted && !mcpOnly ? projectIds : undefined;
+  const readable = trusted ?? (await queueProjectIds(userId, mcpOnly));
+  const ids = projectIds ? readable.filter((id) => projectIds.includes(id)) : readable;
   if (!ids.length) return { items: [], total: 0, queued: 0, running: 0 };
   // A run started in a document carries its comment, so it also takes reading documents.
-  const documentIds = await readableProjectIds(userId, [['documents', 'read']], {
-    mcpOnly,
-    includeArchived: true,
-  });
+  const documentIds =
+    trusted ??
+    (await readableProjectIds(userId, [['documents', 'read']], {
+      mcpOnly,
+      includeArchived: true,
+    }));
   const where = and(
     inArray(agentRun.projectId, ids),
     runId == null ? undefined : eq(agentRun.id, runId),
-    eq(aiAgent.kind, 'external'),
     or(isNull(agentRun.issueId), eq(issue.projectId, agentRun.projectId)),
     or(isNull(agentRun.documentId), inArray(agentRun.projectId, documentIds)),
     runDocumentVisibleTo(userId),
@@ -116,10 +148,69 @@ export async function listRunnerQueue(
   };
 }
 
-export async function runnerQueueRevision(userId: string, mcpOnly = false) {
-  const ids = await queueProjectIds(userId, mcpOnly);
+// Whether the user runs the team: its owner or a manager, or the workspace's owner. They
+// read every project of the team without a role in it.
+export async function runsProjectTeam(teamId: number, userId: string): Promise<boolean> {
+  return runsTeam((await getTeamAccess(teamId, userId))?.role ?? null);
+}
+
+// The projects of a team, or of every team of a workspace, archived ones included.
+export async function scopeProjectIds(
+  scope: { teamId: number } | { workspaceId: number },
+): Promise<number[]> {
+  const rows = await db
+    .select({ id: project.id })
+    .from(project)
+    .innerJoin(team, eq(team.id, project.teamId))
+    .where('teamId' in scope ? eq(team.id, scope.teamId) : eq(team.workspaceId, scope.workspaceId));
+  return rows.map((row) => row.id);
+}
+
+export async function teamRunsInFlight(teamId: number) {
+  return workspaceRunsInFlight(await teamWorkspaceId(teamId, db));
+}
+
+// The instance's limit is left out: it counts the runs of every workspace, not this one's.
+export async function workspaceRunsInFlight(workspaceId: number) {
+  const [running, limits] = await Promise.all([
+    countRunsInFlight(workspaceId),
+    getLimits(workspaceId),
+  ]);
+  return { running, limit: await getRunLimit(workspaceId, limits) };
+}
+
+// The projects of the teams the user owns or manages, whose runs the team's and the
+// project's queues list without a role in the project.
+async function runTeamProjectIds(userId: string): Promise<number[]> {
+  const rows = await db
+    .select({ id: project.id })
+    .from(project)
+    .innerJoin(teamMember, eq(teamMember.teamId, project.teamId))
+    .where(and(eq(teamMember.userId, userId), inArray(teamMember.role, ['owner', 'manager'])));
+  return rows.map((row) => row.id);
+}
+
+// Covers every project a queue may list to the user, so a run in a project they read only
+// as whoever runs its team also moves the marker. The runs in flight in those projects'
+// workspaces are counted too: the queue's header shows them, projects the user does not
+// read included.
+export async function runnerQueueRevision(
+  userId: string,
+  grants: Map<number, WorkspaceGrant>,
+  mcpOnly = false,
+) {
+  const [readable, runTeam] = await Promise.all([
+    queueProjectIds(userId, mcpOnly, grants),
+    mcpOnly ? [] : runTeamProjectIds(userId),
+  ]);
+  const ids = mcpOnly ? readable : [...new Set([...readable, ...runTeam])].sort((a, b) => a - b);
   if (!ids.length) return '0';
-  const [rows, expiredRows, presence] = await Promise.all([
+  const workspaceIds = db
+    .selectDistinct({ id: team.workspaceId })
+    .from(project)
+    .innerJoin(team, eq(team.id, project.teamId))
+    .where(inArray(project.id, ids));
+  const [rows, expiredRows, presence, inFlight] = await Promise.all([
     db
       .select({ scope: revision.scope, rev: revision.rev })
       .from(revision)
@@ -153,11 +244,21 @@ export async function runnerQueueRevision(userId: string, mcpOnly = false) {
         ),
       )
       .orderBy(aiAgent.id),
+    db
+      .select({ id: team.workspaceId, running: sql<number>`count(*)::int` })
+      .from(agentRun)
+      .innerJoin(aiAgent, eq(aiAgent.id, agentRun.agentId))
+      .innerJoin(project, eq(project.id, agentRun.projectId))
+      .innerJoin(team, eq(team.id, project.teamId))
+      .where(and(holdsSlot, inArray(team.workspaceId, workspaceIds)))
+      .groupBy(team.workspaceId)
+      .orderBy(team.workspaceId),
   ]);
   return [
     ids.join(','),
     rows.map((row) => `${row.scope}=${row.rev}`).join(','),
     expiredRows[0]?.total ?? 0,
     presence.map((row) => `${row.id}=${row.state}`).join(','),
+    inFlight.map((row) => `${row.id}=${row.running}`).join(','),
   ].join(':');
 }

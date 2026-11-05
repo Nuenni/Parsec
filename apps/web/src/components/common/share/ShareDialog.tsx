@@ -280,6 +280,54 @@ export default function ShareDialog({
               </Popover>
             </div>
 
+            <div className="flex items-center justify-between gap-4 rounded-md border px-3 py-2.5">
+              <span className="min-w-0">
+                <span className="block text-sm">{t('expiry')}</span>
+                <span className="block text-xs text-muted-foreground">{t('expiryHint')}</span>
+              </span>
+              <Popover open={expiryOpen} onOpenChange={setExpiryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    className="h-8 shrink-0 gap-1.5 font-normal"
+                  >
+                    <CalendarClock className="size-4" />
+                    {expiryLabel}
+                    <ChevronDown className="size-3.5 opacity-60" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <div className="flex flex-col p-1">
+                    <ExpiryOption
+                      label={t('neverExpires')}
+                      onSelect={() => void onSetExpiry(null)}
+                    />
+                    {EXPIRY_PRESETS.map((days) => (
+                      <ExpiryOption
+                        key={days}
+                        label={t('expiresInDays', { count: days })}
+                        onSelect={() => void onSetExpiry(inDays(days))}
+                      />
+                    ))}
+                  </div>
+                  <div className="border-t">
+                    <p className="px-3 pt-2 text-xs text-muted-foreground">{t('expiryPickDate')}</p>
+                    <Calendar
+                      mode="single"
+                      selected={expiry ? new Date(expiry) : undefined}
+                      disabled={{ before: new Date() }}
+                      onSelect={(day) => {
+                        if (day) void onSetExpiry(endOfDay(day));
+                      }}
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <DialogFooter className="mt-1 sm:justify-start">
               <Button
                 type="button"

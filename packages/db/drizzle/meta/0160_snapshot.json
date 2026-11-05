@@ -1,6 +1,6 @@
 {
-  "id": "b0ba91a6-40c3-4115-ba88-03e750689877",
-  "prevId": "4754c0b3-be62-4552-9245-4df606102918",
+  "id": "173decd4-f7a4-41c5-9d03-e76c27a79e9a",
+  "prevId": "84748b93-dcaf-405a-afe7-a11413f4be02",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5849,12 +5849,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9678,25 +9672,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "share_token": {
-          "name": "share_token",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "share_include_children": {
-          "name": "share_include_children",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9864,15 +9839,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "project_document_share_token_unique": {
-          "name": "project_document_share_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "share_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
         "project_document_version_check": {
@@ -10647,12 +10614,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -11359,7 +11320,7 @@
           "name": "team_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -11402,6 +11363,38 @@
           ],
           "isUnique": true,
           "where": "\"team_role\".\"is_default\"",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "team_role_system_name_uq": {
+          "name": "team_role_system_name_uq",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"team_role\".\"team_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "team_role_system_default_uq": {
+          "name": "team_role_system_default_uq",
+          "columns": [
+            {
+              "expression": "is_default",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"team_role\".\"team_id\" IS NULL AND \"team_role\".\"is_default\"",
           "concurrently": false,
           "method": "btree",
           "with": {}

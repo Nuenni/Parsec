@@ -170,6 +170,20 @@
     },
     "joined": "عضو شده در {date}"
   },
+  "roles": {
+    "newRole": "نقش جدید",
+    "empty": "هنوز نقش سیستمی وجود ندارد.",
+    "default": "پیش‌فرض",
+    "defaultUndeletable": "نقش پیش‌فرض قابل حذف نیست",
+    "columns": {
+      "role": "نقش",
+      "permissions": "مجوزها"
+    },
+    "edit": "ویرایش نقش",
+    "delete": "حذف نقش",
+    "deleteTitle": "حذف نقش «{name}»",
+    "deleteDescription": "این کار قابل بازگشت نیست."
+  },
   "general": {
     "saved": "پیش‌فرض‌های پروژه ذخیره شد",
     "projectDefaults": "پیش‌فرض‌های پروژه",
@@ -197,7 +211,10 @@
     "maxRunTime": "حداکثر زمان اجرا",
     "maxRunTimeHint": "مدتی که یک اجرای عامل می‌تواند طول بکشد پیش از آنکه متوقف و به‌عنوان ناموفق ذخیره شود. محدودیت خود عامل نمی‌تواند از آن بیشتر باشد.",
     "runMinutes": "{minutes, plural, one {# دقیقه} other {# دقیقه}}",
-    "runSeconds": "{seconds} ثانیه"
+    "runSeconds": "{seconds} ثانیه",
+    "concurrentRuns": "اجراهای هم‌زمان",
+    "concurrentRunsHint": "تعداد اجراهای عامل که هم‌زمان روی این سامانه انجام می‌شوند. بقیه در صف منتظر می‌مانند. گفتگوها و عامل‌های خارجی حساب نمی‌شوند. ۰ یعنی بدون محدودیت.",
+    "concurrentRunsInvalid": "یک عدد صحیح از ۰ تا {max} وارد کنید."
   },
   "authentication": {
     "saved": "تنظیمات احراز هویت ذخیره شد",

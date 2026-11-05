@@ -19,6 +19,8 @@ export interface Notification {
   issueSeq: number | null;
   issueTitle: string | null;
   issueStateType: StateType | null;
+  // Set while the comment it is about still exists.
+  issueCommentId: number | null;
   documentId: number | null;
   documentTitle: string | null;
   documentIcon: string | null;

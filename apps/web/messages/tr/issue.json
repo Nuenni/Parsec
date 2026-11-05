@@ -248,6 +248,8 @@
     "toSend": "göndermek için",
     "unknownAuthor": "Bilinmeyen",
     "goToLastComment": "Son yoruma git",
+    "copyLink": "Bağlantıyı kopyala",
+    "linkCopied": "Bağlantı kopyalandı",
     "edit": "Düzenle",
     "edited": "düzenlendi",
     "deleteComment": "Yorumu sil",
@@ -436,7 +438,7 @@
   "feedOldest": "En eski",
   "feedChangeOrder": "Sıralamayı değiştir",
   "feedRunToggle": "Benzer değişiklikleri göster",
-  "shareUnavailable": "Paylaşılan bu işe ulaşılamıyor. Bağlantı iptal edilmiş olabilir.",
+  "shareUnavailable": "Paylaşılan bu işe ulaşılamıyor. Bağlantı iptal edilmiş ya da süresi dolmuş olabilir.",
   "fieldSelects": {
     "changeState": "Durumu değiştir…",
     "changeType": "Türü değiştir…",
@@ -479,7 +481,7 @@
     "noLabels": "Yok"
   },
   "agentRuns": {
-    "title": "Agent runs",
+    "title": "Ajan çalıştırmaları",
     "refresh": "Refresh",
     "loading": "Loading runs…",
     "loadError": "Could not load run history. Try refreshing.",
@@ -518,7 +520,9 @@
     "queued": "Waiting",
     "running": "Running",
     "queuedHint": "Waiting for a runner, a retry or its scheduled start.",
-    "queueTitle": "Runner queue",
+    "queueTitle": "Ajan çalıştırmaları",
+    "internalInFlight": "Çalışma alanının dahili ajanları: {limit} içinden {running} çalışıyor",
+    "internalInFlightNoLimit": "Çalışma alanının dahili ajanları: {running} çalışıyor",
     "queueEmpty": "No runs yet.",
     "activeSection": "In progress",
     "historySection": "History",

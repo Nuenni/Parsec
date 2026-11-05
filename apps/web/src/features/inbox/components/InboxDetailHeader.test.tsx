@@ -24,6 +24,7 @@ let originalGlobalDescriptors: Map<string, PropertyDescriptor | undefined>;
 function render({
   projectKey = 'acme.TEST',
   issueSeq = 42 as number | null,
+  issueCommentId = null as number | null,
   documentId = null as number | null,
   documentTitle = null as string | null,
   isMobile = false,
@@ -33,7 +34,7 @@ function render({
       <NextIntlClientProvider locale="en" messages={{ documents, inbox, issue }} timeZone="UTC">
         <InboxDetailHeader
           projectKey={projectKey}
-          notification={{ issueSeq, documentId, documentTitle }}
+          notification={{ issueSeq, issueCommentId, documentId, documentTitle }}
           isMobile={isMobile}
           onBack={() => {
             backCalls += 1;
@@ -104,6 +105,15 @@ describe('InboxDetailHeader', () => {
     assert.equal(document.querySelector('a')?.getAttribute('href'), '/acme/issue/TEST-73');
     assert.ok(document.querySelector('#root')?.textContent?.includes('TEST-73'));
     assert.equal(backCalls, 0);
+  });
+
+  it('opens the page of a comment notification at the comment', () => {
+    render({ issueCommentId: 7 });
+    assert.equal(
+      document.querySelector('a')?.getAttribute('href'),
+      '/acme/issue/TEST-42#comment-7',
+    );
+    assert.ok(document.querySelector('#root')?.textContent?.includes('TEST-42'));
   });
 
   it('uses the canonical route builder for project keys', () => {

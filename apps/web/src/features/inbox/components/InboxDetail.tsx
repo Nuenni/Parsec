@@ -47,6 +47,7 @@ export default function InboxDetail({
             issueId={notification.issueId!}
             layout={isMobile ? 'panel' : 'split'}
             onDeleted={onDeleted}
+            commentId={notification.issueCommentId}
           />
         </div>
       )}

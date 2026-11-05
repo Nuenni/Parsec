@@ -1,1 +1,0 @@
-ALTER TABLE "project_document" ADD COLUMN "share_include_issues" boolean DEFAULT false NOT NULL;

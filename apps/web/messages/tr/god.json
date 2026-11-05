@@ -170,6 +170,20 @@
     },
     "joined": "{date} tarihinde katıldı"
   },
+  "roles": {
+    "newRole": "Yeni rol",
+    "empty": "Henüz sistem rolü yok.",
+    "default": "Varsayılan",
+    "defaultUndeletable": "Varsayılan rol silinemez",
+    "columns": {
+      "role": "Rol",
+      "permissions": "İzinler"
+    },
+    "edit": "Rolü düzenle",
+    "delete": "Rolü sil",
+    "deleteTitle": "\"{name}\" rolünü sil",
+    "deleteDescription": "Bu işlem geri alınamaz."
+  },
   "general": {
     "saved": "Proje varsayılanları kaydedildi",
     "projectDefaults": "Proje varsayılanları",
@@ -197,7 +211,10 @@
     "maxRunTime": "Azami çalışma süresi",
     "maxRunTimeHint": "Bir ajan çalışmasının durdurulup başarısız olarak kaydedilmeden önce ne kadar sürebileceği. Bir ajanın kendi sınırı bunu aşamaz.",
     "runMinutes": "{minutes, plural, one {# dakika} other {# dakika}}",
-    "runSeconds": "{seconds} sn"
+    "runSeconds": "{seconds} sn",
+    "concurrentRuns": "Aynı anda çalıştırma",
+    "concurrentRunsHint": "Bu örneklemde aynı anda kaç ajan çalıştırmasının yürüyeceği. Diğerleri sırada bekler. Sohbetler ve harici ajanlar sayılmaz. 0 sınırsız demektir.",
+    "concurrentRunsInvalid": "0 ile {max} arasında bir tam sayı girin."
   },
   "authentication": {
     "saved": "Kimlik doğrulama ayarları kaydedildi",

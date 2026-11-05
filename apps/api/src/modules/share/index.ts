@@ -63,17 +63,16 @@ export const shareRoutes = new Elysia({ name: 'share', detail: { tags: ['Share']
   .use(authContext)
   .use(guards)
   // Guards for the enable/revoke routes, which address an issue, a view or a document
-  // by its own id. Sharing one is an edit of it. A private page has no share link, so
-  // it is not found here.
+  // by its own id. Sharing one is an edit of it. Only a project's view has a share
+  // link, and neither a private view nor a private page is found here.
   .macro({
     workItem: entityGuard('work_items', 'Issue not found', (p) =>
       getIssueProjectId(Number(p.issueId)),
     ),
-    savedView: entityGuard(
-      'views',
-      'View not found',
-      async (p) => (await getView(Number(p.viewId)))?.projectId ?? null,
-    ),
+    savedView: entityGuard('views', 'View not found', async (p, user) => {
+      const view = await getView(Number(p.viewId), user?.id ?? null);
+      return view && !view.isPrivate ? view.projectId : null;
+    }),
     sharedDocument: entityGuard('documents', 'Document not found', (p) =>
       shareableDocumentProjectId(Number(p.documentId)),
     ),

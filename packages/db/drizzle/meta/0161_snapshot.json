@@ -1,6 +1,6 @@
 {
-  "id": "a0b9a303-7b00-456e-83ed-f1991b56dd02",
-  "prevId": "b0ba91a6-40c3-4115-ba88-03e750689877",
+  "id": "b881bc7c-3c07-4064-818c-91741587b347",
+  "prevId": "173decd4-f7a4-41c5-9d03-e76c27a79e9a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5849,12 +5849,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9678,32 +9672,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "share_token": {
-          "name": "share_token",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "share_include_children": {
-          "name": "share_include_children",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "share_include_issues": {
-          "name": "share_include_issues",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -9871,15 +9839,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "project_document_share_token_unique": {
-          "name": "project_document_share_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "share_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
         "project_document_version_check": {
@@ -10654,12 +10614,6 @@
           "notNull": true,
           "default": false
         },
-        "share_expires_at": {
-          "name": "share_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -11366,7 +11320,7 @@
           "name": "team_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -11397,18 +11351,34 @@
         }
       },
       "indexes": {
-        "team_role_default_uq": {
-          "name": "team_role_default_uq",
+        "team_role_system_name_uq": {
+          "name": "team_role_system_name_uq",
           "columns": [
             {
-              "expression": "team_id",
+              "expression": "name",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             }
           ],
           "isUnique": true,
-          "where": "\"team_role\".\"is_default\"",
+          "where": "\"team_role\".\"team_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "team_role_system_default_uq": {
+          "name": "team_role_system_default_uq",
+          "columns": [
+            {
+              "expression": "is_default",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"team_role\".\"team_id\" IS NULL AND \"team_role\".\"is_default\"",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -11456,7 +11426,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "team_role_default_system_check": {
+          "name": "team_role_default_system_check",
+          "value": "\"team_role\".\"team_id\" IS NULL OR NOT \"team_role\".\"is_default\""
+        }
+      },
       "isRLSEnabled": false
     },
     "public.user_notification_preference": {

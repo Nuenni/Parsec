@@ -45,6 +45,7 @@ export default function IssueDetailContent({
   onIssueLoaded,
   onDeleted,
   layout = 'panel',
+  commentId = null,
 }: {
   project: ProjectDetail;
   issueId: number;
@@ -58,6 +59,8 @@ export default function IssueDetailContent({
   // two-column shape but in normal flow (no fixed positioning), so it fits
   // inside a narrower container like the inbox pane.
   layout?: 'panel' | 'page' | 'split';
+  // The comment to bring into view: the one a link or a notification points at.
+  commentId?: number | null;
 }) {
   const t = useTranslations('issue');
   const tCommon = useTranslations('common');
@@ -283,19 +286,25 @@ export default function IssueDetailContent({
         <IssueActivityFeed
           issueId={issue.id}
           projectKey={project.project.ref}
+          sequenceNumber={issue.sequenceNumber}
           columns={project.columns}
           imageByUserId={imageByUserId}
           view={effectiveActivityView}
           canReadAgentRuns={canReadAgentRuns}
+          commentId={commentId}
         />
       </div>
-      <LastCommentBubble
-        key={issue.id}
-        issueId={issue.id}
-        feedRef={feedRef}
-        imageByUserId={imageByUserId}
-        view={effectiveActivityView}
-      />
+      {/* The reader came for that comment, and the bubble would rise while the feed
+          loads the pages before it. */}
+      {commentId == null && (
+        <LastCommentBubble
+          key={issue.id}
+          issueId={issue.id}
+          feedRef={feedRef}
+          imageByUserId={imageByUserId}
+          view={effectiveActivityView}
+        />
+      )}
     </>
   );
 

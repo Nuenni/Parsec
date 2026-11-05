@@ -170,6 +170,20 @@
     },
     "joined": "bergabung {date}"
   },
+  "roles": {
+    "newRole": "Peran baru",
+    "empty": "Belum ada peran sistem.",
+    "default": "Bawaan",
+    "defaultUndeletable": "Peran bawaan tidak dapat dihapus",
+    "columns": {
+      "role": "Peran",
+      "permissions": "Izin"
+    },
+    "edit": "Ubah peran",
+    "delete": "Hapus peran",
+    "deleteTitle": "Hapus peran \"{name}\"",
+    "deleteDescription": "Tindakan ini tidak dapat dibatalkan."
+  },
   "general": {
     "saved": "Pengaturan bawaan proyek disimpan",
     "projectDefaults": "Pengaturan bawaan proyek",
@@ -197,7 +211,10 @@
     "maxRunTime": "Waktu jalan maksimum",
     "maxRunTimeHint": "Berapa lama satu jalannya agen boleh berlangsung sebelum dihentikan dan disimpan sebagai gagal. Batas milik agen tidak boleh melebihinya.",
     "runMinutes": "{minutes, plural, other {# menit}}",
-    "runSeconds": "{seconds} dtk"
+    "runSeconds": "{seconds} dtk",
+    "concurrentRuns": "Eksekusi bersamaan",
+    "concurrentRunsHint": "Berapa banyak eksekusi agen yang berjalan bersamaan di instance ini. Sisanya menunggu dalam antrean. Obrolan dan agen eksternal tidak dihitung. 0 berarti tanpa batas.",
+    "concurrentRunsInvalid": "Masukkan bilangan bulat dari 0 sampai {max}."
   },
   "authentication": {
     "saved": "Pengaturan autentikasi disimpan",

@@ -61,6 +61,8 @@ export const workspace = pgTable(
     // Who creates teams in it: the owner alone, the owner and admins (managers), or
     // anyone in one of its teams (members).
     teamCreation: text('team_creation').notNull().default('owner'),
+    // Runs of its internal agents in flight at once; 0 sets no limit of its own.
+    maxConcurrentRuns: integer('max_concurrent_runs').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -68,6 +70,7 @@ export const workspace = pgTable(
       'workspace_team_creation_check',
       sql`${t.teamCreation} IN ('owner', 'managers', 'members')`,
     ),
+    check('workspace_max_concurrent_runs_check', sql`${t.maxConcurrentRuns} >= 0`),
   ],
 );
 
@@ -196,6 +199,66 @@ export const project = pgTable(
   (t) => [unique('project_team_key_uq').on(t.teamId, t.key)],
 );
 
+// A project template of a workspace: a snapshot of a project's configuration, without
+// its issues, that new projects of its teams are created from. The snapshot's shape is
+// ProjectSnapshot in the api (modules/projects/copy.ts). With all_teams off, only the
+// teams in project_template_team see it. The flag is explicit so that a deleted team
+// does not open a limited template to the whole workspace.
+export const projectTemplate = pgTable(
+  'project_template',
+  {
+    id: serial('id').primaryKey(),
+    workspaceId: integer('workspace_id')
+      .notNull()
+      .references(() => workspace.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+    snapshot: jsonb('snapshot').notNull(),
+    allTeams: boolean('all_teams').notNull().default(true),
+    // The template's page in the gallery at itsaplan.dev, NULL while it is not published.
+    publicationId: text('publication_id'),
+    publicationUrl: text('publication_url'),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('project_template_workspace_idx').on(t.workspaceId)],
+);
+
+// The teams a project template is limited to when its all_teams is off.
+export const projectTemplateTeam = pgTable(
+  'project_template_team',
+  {
+    templateId: integer('template_id')
+      .notNull()
+      .references(() => projectTemplate.id, { onDelete: 'cascade' }),
+    teamId: integer('team_id')
+      .notNull()
+      .references(() => team.id, { onDelete: 'cascade' }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.templateId, t.teamId] }),
+    index('project_template_team_team_idx').on(t.teamId),
+  ],
+);
+
+// The gallery publisher a workspace publishes its project templates under: the email it
+// confirmed with a code, and the key the gallery issued for it. The key is read back for
+// every publish, so it is kept encrypted rather than hashed. The author is the name the
+// gallery shows on every template of the address; the workspace keeps a copy to show in
+// its dialogs and refuses a publish until it is set.
+export const templatePublisher = pgTable('template_publisher', {
+  workspaceId: integer('workspace_id')
+    .primaryKey()
+    .references(() => workspace.id, { onDelete: 'cascade' }),
+  email: text('email').notNull(),
+  keyCiphertext: text('key_ciphertext').notNull(),
+  keyIv: text('key_iv').notNull(),
+  keyAuthTag: text('key_auth_tag').notNull(),
+  authorName: text('author_name').notNull().default(''),
+  authorUrl: text('author_url'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Per-project key-value settings, mirroring app_setting but scoped to a project.
 // The value is a jsonb blob owned by whatever feature reads the key, so one table
 // backs many project settings (e.g. auto-archive thresholds under key
@@ -281,22 +344,21 @@ export const userPreference = pgTable(
   ],
 );
 
-// Custom roles per team, shared by every project the team owns. A role carries a
-// permission matrix: for each resource (work_items, dashboards, ...) the
-// create/edit/read/delete flags. The matrix is a jsonb blob owned and enforced by
-// the API (see apps/api/src/shared/permissions.ts). Exactly one role per team is
-// the default ("Member"): it is assigned to members that join through an invite
-// and is the fallback for a member row with no explicit role. Owners bypass roles
-// entirely (they always have full access), so their project_member.role_id stays
-// NULL. A member of a project may only be put on a role of that project's team;
-// the API checks it, no foreign key can.
+// The roles a project member is put on. A role carries a permission matrix: for each
+// resource (work_items, dashboards, ...) the create/edit/read/delete flags. The matrix
+// is a jsonb blob owned and enforced by the API (see apps/api/src/shared/permissions.ts).
+// A row with a team_id is a custom role of that team, shared by every project the team
+// owns. A row with a NULL team_id is a system role: every team assigns it, and only the
+// instance owner edits it, in god mode. The one system role marked default ("Member")
+// is assigned to members that join without a chosen role. Owners bypass roles entirely
+// (they always have full access), so their project_member.role_id stays NULL. A member
+// of a project may only be put on a role of that project's team or a system role; the
+// API checks it, no foreign key can.
 export const teamRole = pgTable(
   'team_role',
   {
     id: serial('id').primaryKey(),
-    teamId: integer('team_id')
-      .notNull()
-      .references(() => team.id, { onDelete: 'cascade' }),
+    teamId: integer('team_id').references(() => team.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
     isDefault: boolean('is_default').notNull().default(false),
     permissions: jsonb('permissions').notNull().default({}),
@@ -304,10 +366,13 @@ export const teamRole = pgTable(
   },
   (t) => [
     unique().on(t.teamId, t.name),
-    // At most one default role per team.
-    uniqueIndex('team_role_default_uq')
-      .on(t.teamId)
-      .where(sql`${t.isDefault}`),
+    check('team_role_default_system_check', sql`${t.teamId} IS NULL OR NOT ${t.isDefault}`),
+    uniqueIndex('team_role_system_name_uq')
+      .on(t.name)
+      .where(sql`${t.teamId} IS NULL`),
+    uniqueIndex('team_role_system_default_uq')
+      .on(t.isDefault)
+      .where(sql`${t.teamId} IS NULL AND ${t.isDefault}`),
     index('team_role_team_idx').on(t.teamId),
   ],
 );
@@ -317,9 +382,10 @@ export const teamRole = pgTable(
 // project-scoped entity only through a row here. The creator is inserted as
 // "owner"; a project can have several owners. Owners always have full access and
 // manage the member list. A "member" row carries role_id pointing at a
-// team_role of the project's team, whose permission matrix decides what that member
-// may do; a NULL role_id falls back to the team's default role. Access checks resolve
-// the owning project of any entity and look for the current user here.
+// team_role of the project's team or a system role, whose permission matrix decides
+// what that member may do; a NULL role_id falls back to the built-in member matrix
+// (defaultMemberPermissions). Access checks resolve the owning project of any entity
+// and look for the current user here.
 export const projectMember = pgTable(
   'project_member',
   {
@@ -377,8 +443,8 @@ export const teamInvite = pgTable(
     // plain member; a rank above that is granted by an invite into the team itself.
     teamRole: text('team_role').notNull().default('member'),
     projectRole: text('project_role'),
-    // The team role the invitee joins the project on when project_role is "member".
-    // NULL falls back to the team's default role. Project owners bypass roles, so an
+    // The role the invitee joins the project on when project_role is "member".
+    // NULL falls back to the default system role. Project owners bypass roles, so an
     // owner invite keeps this NULL.
     roleId: integer('role_id').references(() => teamRole.id, {
       onDelete: 'set null',
@@ -541,6 +607,9 @@ export const aiAgent = pgTable(
     // trigger_on_assign is set.
     triggerOnMention: boolean('trigger_on_mention').notNull().default(true),
     triggerOnAssign: boolean('trigger_on_assign').notNull().default(false),
+    // Gates the test chat and the external-agent chat only; the triggers above and
+    // schedules still run an agent with chat off.
+    chatEnabled: boolean('chat_enabled').notNull().default(true),
     // How long a delegation run waits before it becomes claimable, which leaves time
     // to keep editing the issue after delegating it. Applies to delegation only: a
     // mention is a question already asked, and its author waits for the reply.
@@ -731,6 +800,9 @@ export const agentRun = pgTable(
     outputTokens: integer('output_tokens'),
     startedAt: timestamp('started_at', { withTimezone: true }),
     executionStartedAt: timestamp('execution_started_at', { withTimezone: true }),
+    // The api's current claim of an internal agent's run; null while the run waits,
+    // deferred or in retry backoff. The instance's run limit counts the claimed runs.
+    claimedAt: timestamp('claimed_at', { withTimezone: true }),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -747,6 +819,13 @@ export const agentRun = pgTable(
     index('agent_run_due_idx').on(t.status, t.nextAttemptAt),
     index('agent_run_schedule_idx').on(t.scheduleId),
     index('agent_run_project_idx').on(t.projectId),
+    // Back an issue's run list and the cascades of an issue or comment delete.
+    index('agent_run_issue_idx')
+      .on(t.issueId, t.id.desc())
+      .where(sql`${t.issueId} IS NOT NULL`),
+    index('agent_run_source_activity_idx')
+      .on(t.sourceActivityId)
+      .where(sql`${t.sourceActivityId} IS NOT NULL`),
   ],
 );
 
@@ -1508,6 +1587,11 @@ export const issue = pgTable(
     index('issue_cycle_idx')
       .on(t.cycleId)
       .where(sql`${t.cycleId} IS NOT NULL`),
+    // Backs the progress counts of the initiatives list and of one initiative, and the
+    // ON DELETE SET NULL an initiative delete runs.
+    index('issue_initiative_idx')
+      .on(t.initiativeId)
+      .where(sql`${t.initiativeId} IS NOT NULL`),
   ],
 );
 
@@ -1994,14 +2078,23 @@ export const projectView = pgTable(
     shareExtended: boolean('share_extended').notNull().default(false),
     // When the share link stops working; NULL means never. See issue.shareExpiresAt.
     shareExpiresAt: timestamp('share_expires_at', { withTimezone: true }),
+    // A private view is seen only by its owner, not even by a project owner. The owner
+    // is set only on private views, so deleting an account takes its private views and
+    // never a project's.
+    isPrivate: boolean('is_private').notNull().default(false),
+    ownerUserId: text('owner_user_id').references(() => user.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('project_view_project_idx').on(t.projectId, t.position)],
+  (t) => [
+    index('project_view_project_idx').on(t.projectId, t.position),
+    index('project_view_owner_idx').on(t.ownerUserId),
+    check('project_view_private_owner_check', sql`${t.isPrivate} = (${t.ownerUserId} is not null)`),
+  ],
 );
 
-// The saved views a user marked as favorite. Favorites are personal: they pin the
-// view's tab to the front of the tab row and list it under Work items in the
-// sidebar, for that user only.
+// The saved views a user marked as favorite. Favorites are personal: they mark the
+// view's tab with a star and list it under Work items in the sidebar, for that user
+// only.
 export const projectViewFavorite = pgTable(
   'project_view_favorite',
   {
@@ -2011,6 +2104,24 @@ export const projectViewFavorite = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
+  },
+  (t) => [primaryKey({ columns: [t.viewId, t.userId] })],
+);
+
+// Each user's own tab row: where they placed a view and whether they hid it. A view
+// without a position follows the last view of its kind in the row, so a view added to the
+// project shows up in rows already arranged. Only a project's view can be hidden.
+export const projectViewPreference = pgTable(
+  'project_view_preference',
+  {
+    viewId: integer('view_id')
+      .notNull()
+      .references(() => projectView.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    position: integer('position'),
+    isHidden: boolean('is_hidden').notNull().default(false),
   },
   (t) => [primaryKey({ columns: [t.viewId, t.userId] })],
 );
@@ -2475,6 +2586,13 @@ export const notification = pgTable(
     index('notification_user_unread_idx')
       .on(t.userId, t.id.desc())
       .where(sql`${t.readAt} IS NULL`),
+    // Back the cascades of an issue or comment delete.
+    index('notification_issue_idx')
+      .on(t.issueId)
+      .where(sql`${t.issueId} IS NOT NULL`),
+    index('notification_source_activity_idx')
+      .on(t.sourceActivityId)
+      .where(sql`${t.sourceActivityId} IS NOT NULL`),
   ],
 );
 

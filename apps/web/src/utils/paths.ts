@@ -49,13 +49,10 @@ export const documentPath = (ref: string, documentId: number) =>
 export const settingsPath = (ref: string, section: string) =>
   `${projectPath(ref)}/settings/${section}`;
 
-// The AI Team destinations listed in the main sidebar (see AI_TEAM_SECTIONS).
+// The AI Team destinations listed in the main sidebar (see useAiTeamSections).
 export const aiTeamPath = (ref: string, section: string) => `${projectPath(ref)}/agents/${section}`;
 
 export const runnerQueuePath = (ref: string) => aiTeamPath(ref, 'queue');
-
-export const runnerQueueRunPath = (ref: string, runId: number) =>
-  `${runnerQueuePath(ref)}/${runId}`;
 
 export const inboxPath = (ref: string) => `${projectPath(ref)}/inbox`;
 
@@ -79,6 +76,9 @@ export const issuePath = (ref: string, sequenceNumber: number) => {
   const { teamRef, key } = splitProjectRef(ref);
   return `/${encodeURIComponent(teamRef)}/issue/${encodeURIComponent(key)}-${sequenceNumber}`;
 };
+
+export const commentPath = (ref: string, sequenceNumber: number, commentId: number) =>
+  `${issuePath(ref, sequenceNumber)}#comment-${commentId}`;
 
 // "MKT-42" -> { key: 'MKT', sequenceNumber: 42 }, or null for anything else.
 export function parseIssueIdentifier(
@@ -164,6 +164,7 @@ export type TeamSection =
   | 'git'
   | 'mcp'
   | 'ai-agents'
+  | 'queue'
   | 'agent-skills'
   | 'agent-tools'
   | 'analytics'

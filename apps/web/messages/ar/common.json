@@ -101,6 +101,8 @@
     "unreachable": "تعذّر الوصول إلى الوكيل. حاول مرة أخرى.",
     "runnerOffline": "المنفّذ (runner) مش متصل",
     "runnerOfflineHint": "شغّل المنفّذ على جهازك عشان تقدر تكلّم الوكيل ده.",
+    "chatDisabled": "هذا الوكيل غير متاح في المحادثة",
+    "chatDisabledHint": "المحادثة متوقفة لهذا الوكيل. الإشارات والتفويضات والمهام المجدولة ما زالت تعمل.",
     "attachFile": "إرفاق جدول بيانات أو مستند أو ملف PDF أو ملف نصي ليقرأه الوكيل",
     "removeAttachment": "إزالة المرفق",
     "uploadFailed": "تعذّر رفع الملف.",
@@ -240,5 +242,6 @@
     "perPage": "لكل صفحة",
     "range": "{first}-{last} من {total}"
   },
-  "aboutCloudAndPro": "اعرف المزيد عن Cloud وPro"
+  "aboutCloudAndPro": "اعرف المزيد عن Cloud وPro",
+  "signingOut": "جارٍ تسجيل الخروج…"
 }

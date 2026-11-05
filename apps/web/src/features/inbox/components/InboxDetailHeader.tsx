@@ -5,7 +5,7 @@ import { ChevronLeft, Maximize2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { Notification } from '@/lib/api/endpoints/notifications';
 import { Button } from '@/components/ui/button';
-import { documentPath, issuePath, splitProjectRef } from '@/utils/paths';
+import { commentPath, documentPath, issuePath, splitProjectRef } from '@/utils/paths';
 
 export default function InboxDetailHeader({
   projectKey,
@@ -14,7 +14,7 @@ export default function InboxDetailHeader({
   onBack,
 }: {
   projectKey: string;
-  notification: Pick<Notification, 'issueSeq' | 'documentId' | 'documentTitle'>;
+  notification: Pick<Notification, 'issueSeq' | 'issueCommentId' | 'documentId' | 'documentTitle'>;
   isMobile: boolean;
   onBack: () => void;
 }) {
@@ -22,6 +22,10 @@ export default function InboxDetailHeader({
   const tIssue = useTranslations('issue');
   const tDocuments = useTranslations('documents');
   const openLabel = tIssue('openAsPage');
+  const issueHref =
+    n.issueCommentId != null
+      ? commentPath(projectKey, n.issueSeq!, n.issueCommentId)
+      : issuePath(projectKey, n.issueSeq!);
   const { label, href } =
     n.documentId != null
       ? {
@@ -30,7 +34,7 @@ export default function InboxDetailHeader({
         }
       : {
           label: `${splitProjectRef(projectKey).key}-${n.issueSeq}`,
-          href: issuePath(projectKey, n.issueSeq!),
+          href: issueHref,
         };
 
   return (
